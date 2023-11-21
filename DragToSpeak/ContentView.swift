@@ -10,6 +10,9 @@ struct SpellingBoardView: View {
     @State private var completedDwellCell: (row: Int, column: Int)? = nil
     @State private var currentSentence = ""
 
+    @State private var dragPoints: [CGPoint] = []
+    @State private var lastDirection: CGVector?
+    let angleThreshold = 20 * Double.pi / 180 // Convert 20 degrees to radians
 
     
     let dwellDuration = 0.5 // 0.5 seconds dwell time
@@ -68,21 +71,27 @@ struct SpellingBoardView: View {
                 .gesture(
                     DragGesture(minimumDistance: 0, coordinateSpace: .local)
                         .onChanged { value in
-                            let location = value.location
-                            updateSelection(at: location, in: geometry.size)
+                            dragPoints.append(value.location)
+                            processDragForLetterSelection(gridSize: geometry.size)
                         }
                         .onEnded { _ in
-                            dwellTimer?.invalidate()
-                            if let correctedWord = self.autocorrectWord(self.formedWord) {
-                                self.speakWord(correctedWord)
-                            } else {
-                                self.speakWord(self.formedWord)
-                            }
-                            self.formedWord = ""
+                            let correctedWord = self.autocorrectWord(self.formedWord.trimmingCharacters(in: .whitespaces)) ?? self.formedWord.trimmingCharacters(in: .whitespaces)
+                            self.speakWord(correctedWord)
+                            self.currentSentence += correctedWord + " "
+                            self.formedWord = "" // Reset for next word
+                            self.dragPoints.removeAll()
+                            self.lastDirection = nil // Reset the last direction on gesture end
                         }
+
                 )
             }
         }
+
+    func calculateDirection(from startPoint: CGPoint, to endPoint: CGPoint) -> CGVector {
+        let dx = endPoint.x - startPoint.x
+        let dy = endPoint.y - startPoint.y
+        return CGVector(dx: dx, dy: dy)
+    }
 
     func clearMessage() {
             currentSentence = ""
@@ -95,6 +104,66 @@ struct SpellingBoardView: View {
         func speakMessage() {
             speakWord(currentSentence)
         }
+    
+    func processDragForLetterSelection(gridSize: CGSize) {
+        guard dragPoints.count >= 2 else { return }
+
+        let latestPoint = dragPoints.last!
+        let previousPoint = dragPoints[dragPoints.count - 2]
+
+        // Update the current cell selection based on the latest point
+        updateSelection(at: latestPoint, in: gridSize)
+
+        let currentDirection = calculateDirection(from: previousPoint, to: latestPoint)
+
+        // In processDragForLetterSelection
+        if let lastDirection = lastDirection, didChangeDirection(from: lastDirection, to: currentDirection) {
+            let selectedLetter = determineLetter(at: latestPoint, gridSize: gridSize)
+
+            if selectedLetter == "Space" {
+                let correctedWord = self.autocorrectWord(self.formedWord) ?? self.formedWord
+                self.speakWord(correctedWord)
+                self.currentSentence += correctedWord + " "
+                self.formedWord = ""
+            } else if formedWord.isEmpty || !formedWord.hasSuffix(selectedLetter) {
+                formedWord += selectedLetter
+            }
+        }
+
+        lastDirection = currentDirection
+    }
+    
+    func determineLetter(at point: CGPoint, gridSize: CGSize) -> String {
+        // Calculate the dimensions of each cell
+        let cellWidth = gridSize.width / CGFloat(rows[0].count)
+        let cellHeight = gridSize.height / CGFloat(rows.count)
+
+        // Calculate the row and column based on the touch point
+        let column = Int(point.x / cellWidth)
+        let row = Int(point.y / cellHeight)
+
+        // Check if the calculated row and column are within the bounds of the grid
+        if row >= 0 && row < rows.count && column >= 0 && column < rows[row].count {
+            return rows[row][column]
+        } else {
+            // Return an empty string or some default value if the point is outside the grid
+            return ""
+        }
+    }
+
+    func didChangeDirection(from oldDirection: CGVector, to newDirection: CGVector) -> Bool {
+        let angle = angleBetween(v1: oldDirection, v2: newDirection)
+        return angle > angleThreshold // angleThreshold is a predefined constant
+    }
+
+    func angleBetween(v1: CGVector, v2: CGVector) -> CGFloat {
+        let dotProduct = v1.dx * v2.dx + v1.dy * v2.dy
+        let magnitudeV1 = sqrt(v1.dx * v1.dx + v1.dy * v1.dy)
+        let magnitudeV2 = sqrt(v2.dx * v2.dx + v2.dy * v2.dy)
+        return acos(dotProduct / (magnitudeV1 * magnitudeV2))
+    }
+
+
     
     func determineBackgroundColor(row: Int, column: Int) -> Color {
             if completedDwellCell?.row == row && completedDwellCell?.column == column {
@@ -118,11 +187,11 @@ struct SpellingBoardView: View {
                     currentRow = row
                     currentColumn = column
                     completedDwellCell = nil // Reset completed dwell cell
-                    restartDwellTimer(for: rows[row][column])
+                    // restartDwellTimer(for: rows[row][column]) - NOt using this
                 }
             }
     }
-
+  /*
     func restartDwellTimer(for letter: String) {
         dwellTimer?.invalidate()
         dwellTimer = Timer.scheduledTimer(withTimeInterval: dwellDuration, repeats: false) { _ in
@@ -134,17 +203,17 @@ struct SpellingBoardView: View {
             if letter == "Space" {
                 let wordToSpeak = self.autocorrectWord(self.formedWord) ?? self.formedWord
                 self.speakWord(wordToSpeak)
-                
-                // Reset 'formedWord' after a space is added
-                self.formedWord = ""
+                self.currentSentence += self.formedWord + " "
+                self.formedWord = "" // Reset 'formedWord' after a space is added
             } else {
                 // Continue forming the word
                 self.formedWord += letter
             }
+
             
             self.dwellTimer?.invalidate() // Stop the timer
         }
-    }
+    }*/
 
 
 
@@ -157,9 +226,11 @@ struct SpellingBoardView: View {
         let misspelledRange = textChecker.rangeOfMisspelledWord(in: word, range: range, startingAt: 0, wrap: false, language: "en")
 
         if misspelledRange.location != NSNotFound, let guesses = textChecker.guesses(forWordRange: misspelledRange, in: word, language: "en"), !guesses.isEmpty {
+            print("Correction found: \(guesses[0])")
             return guesses[0] // Return the first guess
         }
 
+        print("No correction found for word: \(word)")
         return nil // No correction found
     }
 
