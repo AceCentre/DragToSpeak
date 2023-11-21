@@ -8,8 +8,14 @@ struct SpellingBoardView: View {
     @State private var currentColumn: Int? = nil
     @State private var dwellTimer: Timer? = nil
     @State private var completedDwellCell: (row: Int, column: Int)? = nil
+    @State private var lastUpdateTime: Date? = nil
+    let dwellThreshold = 0.3 // 0.2 seconds for dwell
     @State private var currentSentence = ""
+    @State private var hasSelectedLetter = false // Add this state variable
+    @State private var selectionDebounceTimer: Timer?
+    @State private var lastCellUpdateTime: Date = Date()
 
+    
     @State private var dragPoints: [CGPoint] = []
     @State private var lastDirection: CGVector?
     let angleThreshold = 20 * Double.pi / 180 // Convert 20 degrees to radians
@@ -111,27 +117,29 @@ struct SpellingBoardView: View {
         let latestPoint = dragPoints.last!
         let previousPoint = dragPoints[dragPoints.count - 2]
 
+        // Calculate the new direction
+        let newDirection = calculateDirection(from: previousPoint, to: latestPoint)
+
         // Update the current cell selection based on the latest point
-        updateSelection(at: latestPoint, in: gridSize)
+        _ = updateSelection(at: latestPoint, in: gridSize, with: newDirection)
 
-        let currentDirection = calculateDirection(from: previousPoint, to: latestPoint)
-
-        // In processDragForLetterSelection
-        if let lastDirection = lastDirection, didChangeDirection(from: lastDirection, to: currentDirection) {
-            let selectedLetter = determineLetter(at: latestPoint, gridSize: gridSize)
-
-            if selectedLetter == "Space" {
-                let correctedWord = self.autocorrectWord(self.formedWord) ?? self.formedWord
-                self.speakWord(correctedWord)
-                self.currentSentence += correctedWord + " "
-                self.formedWord = ""
-            } else if formedWord.isEmpty || !formedWord.hasSuffix(selectedLetter) {
-                formedWord += selectedLetter
-            }
-        }
-
-        lastDirection = currentDirection
+        // Update last direction
+        self.lastDirection = newDirection
     }
+
+
+    func resetDebounceTimer() {
+        selectionDebounceTimer?.invalidate()
+        selectionDebounceTimer = nil
+    }
+    
+    func startDebounceTimer(with point: CGPoint, gridSize: CGSize) {
+        selectionDebounceTimer = Timer.scheduledTimer(withTimeInterval: dwellThreshold, repeats: false) { _ in
+            self.selectLetter(point, gridSize: gridSize)
+        }
+    }
+
+
     
     func determineLetter(at point: CGPoint, gridSize: CGSize) -> String {
         // Calculate the dimensions of each cell
@@ -163,6 +171,8 @@ struct SpellingBoardView: View {
         return acos(dotProduct / (magnitudeV1 * magnitudeV2))
     }
 
+    
+
 
     
     func determineBackgroundColor(row: Int, column: Int) -> Color {
@@ -175,22 +185,60 @@ struct SpellingBoardView: View {
             }
         }
     
-    func updateSelection(at location: CGPoint, in size: CGSize) {
+    func updateSelection(at location: CGPoint, in size: CGSize, with newDirection: CGVector) -> Bool {
+        let previousRow = currentRow
+        let previousColumn = currentColumn
+
         let cellWidth = size.width / CGFloat(rows[0].count)
         let cellHeight = size.height / CGFloat(rows.count)
 
         let column = Int(location.x / cellWidth)
         let row = Int(location.y / cellHeight)
 
+        let now = Date()
+        let timeElapsed = now.timeIntervalSince(lastCellUpdateTime)
+
         if row >= 0 && row < rows.count && column >= 0 && column < rows[0].count {
-                if currentRow != row || currentColumn != column {
+            if currentRow != row || currentColumn != column {
+                if let lastDirection = lastDirection, didChangeDirection(from: lastDirection, to: newDirection) {
+                    // Reset the time counter
+                    lastCellUpdateTime = now
+                    // Update the cell
                     currentRow = row
                     currentColumn = column
-                    completedDwellCell = nil // Reset completed dwell cell
-                    // restartDwellTimer(for: rows[row][column]) - NOt using this
+                } else if timeElapsed >= dwellThreshold {
+                    // Reset the time counter
+                    lastCellUpdateTime = now
+                    // Update the cell
+                    currentRow = row
+                    currentColumn = column
+                    selectLetter(location, gridSize: size) // Select letter if dwell time exceeded
                 }
             }
+        }
+        return currentRow != previousRow || currentColumn != previousColumn
     }
+
+    func selectLetter(_ point: CGPoint, gridSize: CGSize) {
+        let selectedLetter = determineLetter(at: point, gridSize: gridSize)
+        if !selectedLetter.isEmpty {
+            // Append the letter only if it's different from the last one added
+            if formedWord.isEmpty || !(formedWord.last.map { String($0) } == selectedLetter) {
+                formedWord += selectedLetter
+                // Update the current sentence for immediate display
+                currentSentence += selectedLetter
+                // Check for word correction on space selection
+                if selectedLetter == "Space" {
+                    let correctedWord = autocorrectWord(formedWord.trimmingCharacters(in: .whitespaces)) ?? formedWord.trimmingCharacters(in: .whitespaces)
+                    currentSentence = currentSentence.trimmingCharacters(in: .whitespaces) + correctedWord + " "
+                    formedWord = "" // Reset for next word
+                }
+            }
+            print("Selected Letter: \(selectedLetter)")
+        }
+    }
+
+
   /*
     func restartDwellTimer(for letter: String) {
         dwellTimer?.invalidate()
