@@ -4,22 +4,16 @@ import AVFoundation
 struct SpellingBoardView: View {
 
     @State private var formedWord = ""
-    @State private var currentRow: Int? = nil
-    @State private var currentColumn: Int? = nil
-    @State private var dwellTimer: Timer? = nil
     @State private var completedDwellCell: (row: Int, column: Int)? = nil
-    @State private var lastUpdateTime: Date? = nil
-    let dwellThreshold = 0.3 // 0.2 seconds for dwell
     @State private var currentSentence = ""
-    @State private var hasSelectedLetter = false // Add this state variable
-    @State private var selectionDebounceTimer: Timer?
     
     @State private var dragPoints: [CGPoint] = []
     @State private var lastDirection: CGVector?
     let angleThreshold = 20 * Double.pi / 180 // Convert 20 degrees to radians
-
     
     let dwellDuration = 0.5 // 0.5 seconds dwell time
+    @State private var dwellStartTime: Date? = nil
+    @State private var hoveredCell: (row: Int, column: Int)? = nil
     
     let rows = [
         ["A", "B", "C", "D", "E"],
@@ -76,6 +70,7 @@ struct SpellingBoardView: View {
                     DragGesture(minimumDistance: 0, coordinateSpace: .local)
                         .onChanged { value in
                             dragPoints.append(value.location)
+                            selectLetter(value.location, gridSize: geometry.size) // Call the function to select the letter
                             processDragForLetterSelection(gridSize: geometry.size)
                         }
                         .onEnded { _ in
@@ -112,11 +107,84 @@ struct SpellingBoardView: View {
     }
 
     func selectLetter(_ point: CGPoint, gridSize: CGSize) {
-        let selectedLetter = determineLetter(at: point, gridSize: gridSize)
-        if !selectedLetter.isEmpty {
-            updateFormedWordAndSentence(with: selectedLetter)
+        let cell = determineCell(at: point, gridSize: gridSize)
+
+        // If hoveredCell is not set or is different from the current cell
+        if hoveredCell == nil || hoveredCell! != cell {
+            hoveredCell = cell
+            dwellStartTime = Date()
+        }
+
+        // Check if the dwell time has been exceeded
+        if let startTime = dwellStartTime, Date().timeIntervalSince(startTime) >= dwellDuration {
+            // If completedDwellCell is not set or is different from the current cell
+            if completedDwellCell == nil || completedDwellCell! != cell {
+                selectCell(cell)
+                completedDwellCell = cell
+                dwellStartTime = nil
+                hoveredCell = nil
+            }
         }
     }
+
+
+
+
+
+
+
+
+    // Function to determine cell at a point
+    func determineCell(at point: CGPoint, gridSize: CGSize) -> (row: Int, column: Int) {
+        let cellWidth = gridSize.width / CGFloat(rows[0].count)
+        let cellHeight = gridSize.height / CGFloat(rows.count)
+
+        let column = Int(point.x / cellWidth)
+        let row = Int(point.y / cellHeight)
+
+        return (row, column)
+    }
+
+    // Function to check dwell time
+    func checkDwellTime() {
+        if let startTime = dwellStartTime, Date().timeIntervalSince(startTime) >= dwellDuration {
+            if let cell = hoveredCell {
+                selectCell(cell)
+                completedDwellCell = cell // Mark this cell as selected
+                dwellStartTime = nil
+                hoveredCell = nil // Reset hovered cell
+            }
+        }
+    }
+
+
+
+    // Function to select a cell
+    func selectCell(_ cell: (row: Int, column: Int)) {
+        let letter = rows[cell.row][cell.column]
+        updateFormedWordAndSentence(with: letter)
+        // Any additional selection logic here
+    }
+
+    func processDragForLetterSelection(gridSize: CGSize) {
+        guard dragPoints.count >= 2 else { return }
+
+        let latestPoint = dragPoints.last!
+        let previousPoint = dragPoints[dragPoints.count - 2]
+        let newDirection = calculateDirection(from: previousPoint, to: latestPoint)
+
+        if let lastDir = lastDirection, didChangeDirection(from: lastDir, to: newDirection) {
+            let cell = determineCell(at: latestPoint, gridSize: gridSize)
+            
+            if completedDwellCell == nil || completedDwellCell! != cell {
+                selectCell(cell)
+                completedDwellCell = cell
+            }
+        }
+
+        lastDirection = newDirection
+    }
+
 
     private func updateFormedWordAndSentence(with letter: String) {
         // Check if the letter is "Space" and handle accordingly
@@ -154,14 +222,15 @@ struct SpellingBoardView: View {
        }
 
     func determineBackgroundColor(row: Int, column: Int) -> Color {
-              if completedDwellCell?.row == row && completedDwellCell?.column == column {
-                  return Color.red
-              } else if currentRow == row && currentColumn == column {
-                  return Color.gray
-              } else {
-                  return Color.clear
-              }
-          }
+        if completedDwellCell?.row == row && completedDwellCell?.column == column {
+            return Color.red // Selected cell
+        } else if hoveredCell?.row == row && hoveredCell?.column == column {
+            return Color.gray // Currently hovered cell
+        } else {
+            return Color.clear
+        }
+    }
+
 
     func deleteLastCharacter() {
                formedWord = String(formedWord.dropLast())
@@ -179,18 +248,6 @@ struct SpellingBoardView: View {
                currentSentence = ""
            }
     
-    func processDragForLetterSelection(gridSize: CGSize) {
-            guard dragPoints.count >= 2 else { return }
-
-            let latestPoint = dragPoints.last!
-            let previousPoint = dragPoints[dragPoints.count - 2]
-
-            // Calculate the new direction
-            let newDirection = calculateDirection(from: previousPoint, to: latestPoint)
-
-            // Update last direction
-            self.lastDirection = newDirection
-        }
     
     func didChangeDirection(from oldDirection: CGVector, to newDirection: CGVector) -> Bool {
             let angle = angleBetween(v1: oldDirection, v2: newDirection)
