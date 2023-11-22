@@ -2,7 +2,7 @@ import SwiftUI
 import AVFoundation
 
 struct SpellingBoardView: View {
-
+    
     @State private var formedWord = ""
     @State private var completedDwellCell: (row: Int, column: Int)? = nil
     @State private var currentSentence = ""
@@ -27,33 +27,34 @@ struct SpellingBoardView: View {
         ["5", "6", "7", "8", "9"]
     ]
     let speechSynthesizer = AVSpeechSynthesizer()
-
+    
     var body: some View {
+        
+        VStack(spacing: 0) {
+            HStack {
+                // Sentence display row
+                Text(currentSentence)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+                    .background(Color.gray.opacity(0.2))
+                    .border(Color.gray)
+                    .layoutPriority(1) // Ensures the text field expands
+                
+                Spacer()
+                
+                // Buttons for additional functions
+                Button(action: clearMessage) {
+                    Image(systemName: "trash")
+                }
+                Button(action: deleteLastCharacter) {
+                    Image(systemName: "delete.left")
+                }
+                Button(action: speakMessage) {
+                    Image(systemName: "speaker.wave.2")
+                }
+            }
             GeometryReader { geometry in
                 VStack(spacing: 0) {
-                    HStack {
-                        // Sentence display row
-                        Text(currentSentence)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding()
-                            .background(Color.gray.opacity(0.2))
-                            .border(Color.gray)
-                            .layoutPriority(1) // Ensures the text field expands
-                        
-                        Spacer()
-                        
-                        // Buttons for additional functions
-                        Button(action: clearMessage) {
-                            Image(systemName: "trash")
-                        }
-                        Button(action: deleteLastCharacter) {
-                            Image(systemName: "delete.left")
-                        }
-                        Button(action: speakMessage) {
-                            Image(systemName: "speaker.wave.2")
-                        }
-                    }
-
                     ForEach(0..<rows.count, id: \.self) { rowIndex in
                         HStack(spacing: 0) {
                             ForEach(rows[rowIndex].indices, id: \.self) { columnIndex in
@@ -81,12 +82,14 @@ struct SpellingBoardView: View {
                             self.dragPoints.removeAll()
                             self.lastDirection = nil // Reset the last direction on gesture end
                         }
-
+                    
                 )
             }
+            
         }
-
-  
+    }
+    
+    
     
     func determineLetter(at point: CGPoint, gridSize: CGSize) -> String {
         // Calculate the dimensions of each cell
