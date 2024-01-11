@@ -33,7 +33,9 @@ struct SpellingBoardView: View {
         VStack(spacing: 0) {
             HStack {
                 // Sentence display row
-                Text(currentSentence)
+                // We dont ever want to display an empty string because that causes the line height to jump about
+                // There is probably a better way to do this
+                Text(currentSentence == "" ? " " : currentSentence)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
                     .background(Color.gray.opacity(0.2))
