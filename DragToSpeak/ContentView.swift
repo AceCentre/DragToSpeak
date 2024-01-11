@@ -319,8 +319,7 @@ struct SpellingBoardView: View {
         if letter == "Space" {
             // Replace "Space" with an actual space character
             currentSentence += " "
-            checkAndCorrectWordIfNeeded(letter: " ")
-            formedWord = "" // Reset for next word
+            formedWord += "" // Reset for next word
         } else {
             formedWord += letter
             currentSentence += letter
