@@ -35,6 +35,7 @@ struct SpellingBoardView: View {
     
     @State var settingsOpen = false
     @AppStorage("dragType") var dragType: DragType = .dwell
+    @AppStorage("dwellTime") var dwellTime: Double = 3
     
     var body: some View {
         
@@ -85,6 +86,30 @@ struct SpellingBoardView: View {
                             Text("Change how we calculate letter selection")
                             
                         })
+                        
+                        Section(content: {
+                            VStack {
+                                HStack {
+                                    Text("Dwell Time")
+                                    Spacer()
+                                    Text(String(format: "%.2f", dwellTime))
+                                }
+                                
+                                Slider(
+                                    value: $dwellTime,
+                                    in: 0.1...10,
+                                    step: 0.1
+                                ) {
+                                    Text("Dwell Time")
+                                } minimumValueLabel: {
+                                    Text("0.1s")
+                                } maximumValueLabel: {
+                                    Text("10s")
+                                }
+                            }
+                        }, footer: {
+                            Text("The amount of time you must keep your finger on a letter to register a click. This only work in Dwell mode")
+                        })
                     }
                     .navigationTitle("Settings")
                     .toolbar {
@@ -113,17 +138,24 @@ struct SpellingBoardView: View {
                 .gesture(
                     DragGesture(minimumDistance: 0, coordinateSpace: .local)
                         .onChanged { value in
-                            dragPoints.append(value.location)
-                            selectLetter(value.location, gridSize: geometry.size) // Call the function to select the letter
-                            processDragForLetterSelection(gridSize: geometry.size)
+                            if dragType == .direction {
+                                dragPoints.append(value.location)
+                                selectLetter(value.location, gridSize: geometry.size) // Call the function to select the letter
+                                processDragForLetterSelection(gridSize: geometry.size)
+                            }
                         }
                         .onEnded { _ in
-                            let correctedWord = self.autocorrectWord(self.formedWord.trimmingCharacters(in: .whitespaces)) ?? self.formedWord.trimmingCharacters(in: .whitespaces)
-                            self.speakMessage(correctedWord)
-                            self.currentSentence += correctedWord + " "
-                            self.formedWord = "" // Reset for next word
-                            self.dragPoints.removeAll()
-                            self.lastDirection = nil // Reset the last direction on gesture end
+                            if dragType == .direction {
+                                // Removed correction just now as it ends up doubling up the output
+                                // TODO Re-enable corrections
+                                // let correctedWord = self.autocorrectWord(self.formedWord.trimmingCharacters(in: .whitespaces)) ?? self.formedWord.trimmingCharacters(in: .whitespaces)
+                                // self.currentSentence += correctedWord + " "
+                                self.speakMessage(self.formedWord)
+                                self.currentSentence += " "
+                                self.formedWord = "" // Reset for next word
+                                self.dragPoints.removeAll()
+                                self.lastDirection = nil // Reset the last direction on gesture end
+                            }
                         }
                     
                 )
