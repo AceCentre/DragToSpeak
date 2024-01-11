@@ -1,6 +1,11 @@
 import SwiftUI
 import AVFoundation
 
+enum DragType: Int {
+    case direction = 1
+    case dwell = 2
+}
+
 struct SpellingBoardView: View {
     
     @State private var formedWord = ""
@@ -28,6 +33,9 @@ struct SpellingBoardView: View {
     ]
     let speechSynthesizer = AVSpeechSynthesizer()
     
+    @State var settingsOpen = false
+    @AppStorage("dragType") var dragType: DragType = .dwell
+    
     var body: some View {
         
         VStack(spacing: 0) {
@@ -54,7 +62,40 @@ struct SpellingBoardView: View {
                 Button(action: speakMessage) {
                     Image(systemName: "speaker.wave.2")
                 }
+                Button(action: {
+                    settingsOpen = true
+                }) {
+                    Image(systemName: "gear")
+                }.padding(.trailing)
             }
+            .sheet(isPresented: $settingsOpen, content: {
+                NavigationStack {
+                    Form {
+                        Section(content: {
+                            VStack(alignment: .leading) {
+                                Label("Drag Type", systemImage: "hand.draw")
+                                    .labelStyle(.titleOnly)
+                                Picker("Drag Type", selection: $dragType) {
+                                    Text("Direction Change").tag(DragType.direction)
+                                    Text("Dwell").tag(DragType.dwell)
+                                }
+                                .pickerStyle(.segmented)
+                            }.frame(alignment: .leading)
+                        }, footer: {
+                            Text("Change how we calculate letter selection")
+                            
+                        })
+                    }
+                    .navigationTitle("Settings")
+                    .toolbar {
+                        ToolbarItemGroup(placement:.primaryAction) {
+                            Button("Done") {
+                                settingsOpen = false
+                            }
+                        }
+                    }
+                }
+            })
             GeometryReader { geometry in
                 VStack(spacing: 0) {
                     ForEach(0..<rows.count, id: \.self) { rowIndex in
