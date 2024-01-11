@@ -44,6 +44,7 @@
 		3F1CAB292B0CB33600D49ADE /* DragToSpeakUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DragToSpeakUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3F1CAB2D2B0CB33600D49ADE /* DragToSpeakUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragToSpeakUITests.swift; sourceTree = "<group>"; };
 		3F1CAB2F2B0CB33600D49ADE /* DragToSpeakUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragToSpeakUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		D56688D52B5030A00059046C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,6 +95,7 @@
 		3F1CAB112B0CB33000D49ADE /* DragToSpeak */ = {
 			isa = PBXGroup;
 			children = (
+				D56688D52B5030A00059046C /* Info.plist */,
 				3F1CAB122B0CB33000D49ADE /* DragToSpeakApp.swift */,
 				3F1CAB142B0CB33000D49ADE /* ContentView.swift */,
 				3F1CAB162B0CB33500D49ADE /* Assets.xcassets */,
@@ -425,7 +427,7 @@
 				DEVELOPMENT_TEAM = K45HHA96ND;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Drag To Speak";
+				INFOPLIST_FILE = DragToSpeak/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -455,7 +457,7 @@
 				DEVELOPMENT_TEAM = K45HHA96ND;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Drag To Speak";
+				INFOPLIST_FILE = DragToSpeak/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
