@@ -16,8 +16,36 @@ class TimeStampedPoints {
     }
 }
 
-struct SpellingBoardView: View {
+enum Layout: Int {
+    case alphabetical
+    case frequency
     
+    var rows: [[String]] {
+        switch self {
+        case .alphabetical:
+            return [["A", "B", "C", "D", "E"],
+            ["F", "G", "H", "I", "J"],
+            ["K", "L", "M", "N", "O"],
+            ["P", "Q", "R", "S", "T"],
+            ["U", "V", "W", "X", "Y"],
+            ["Z", "Space", "YES", "NO", "Please"],
+            ["Thank you", "OK", "The", " ", " "],
+            ["0", "1", "2", "3", "4"],
+            ["5", "6", "7", "8", "9"]]
+        case .frequency:
+            return  [["Space", "E", "A", "R", "D", "U"],
+            ["T", "O", "I", "L", "G", "V"],
+            ["N", "S", "F", "Y", "X", " "],
+            ["H", "C", "P", "K", "J", " "],
+            ["M", "B", "W", "Q", "Z", " "],
+            ["Thank you", "OK", "The", "YES", "NO", "PLEASE"],
+            ["0", "1", "2", "3", "4", " "],
+            ["5", "6", "7", "8", "9", " "]]
+        }
+    }
+}
+
+struct SpellingBoardView: View {
     @State private var formedWord = ""
     @State private var completedDwellCell: (row: Int, column: Int)? = nil
     @State private var currentSentence = ""
@@ -31,24 +59,14 @@ struct SpellingBoardView: View {
     @State private var dwellStartTime: Date? = nil
     @State private var hoveredCell: (row: Int, column: Int)? = nil
     
-    let rows = [
-        ["A", "B", "C", "D", "E"],
-        ["F", "G", "H", "I", "J"],
-        ["K", "L", "M", "N", "O"],
-        ["P", "Q", "R", "S", "T"],
-        ["U", "V", "W", "X", "Y"],
-        ["Z", "Space", "YES", "NO", "Please"],
-        ["Thank you", "OK", "The", " ", " "],
-        ["0", "1", "2", "3", "4"],
-        ["5", "6", "7", "8", "9"]
-    ]
     let speechSynthesizer = AVSpeechSynthesizer()
     
     @State var settingsOpen = false
     @AppStorage("dragType") var dragType: DragType = .dwell
     @AppStorage("dwellTime") var dwellTime: Double = 3
     @AppStorage("showTrail") var showTrail: Bool = true
-
+    @AppStorage("Layout") var layout: Layout = .alphabetical
+    
     var body: some View {
         
         VStack(spacing: 0) {
@@ -100,6 +118,16 @@ struct SpellingBoardView: View {
                         })
                         
                         Section(content: {
+                            Picker("Layout", selection: $layout) {
+                                Text("Alphabetical").tag(Layout.alphabetical)
+                                Text("Frequency").tag(Layout.frequency)
+                            }
+                            
+                        }, footer: {
+                            Text("The layout of the letters on the grid")
+                        })
+                        
+                        Section(content: {
                             VStack {
                                 HStack {
                                     Text("Dwell Time")
@@ -142,12 +170,12 @@ struct SpellingBoardView: View {
             GeometryReader { geometry in
                 ZStack {
                     VStack(spacing: 0) {
-                        ForEach(0..<rows.count, id: \.self) { rowIndex in
+                        ForEach(0..<layout.rows.count, id: \.self) { rowIndex in
                             HStack(spacing: 0) {
-                                ForEach(rows[rowIndex].indices, id: \.self) { columnIndex in
-                                    let letter = rows[rowIndex][columnIndex]
+                                ForEach(layout.rows[rowIndex].indices, id: \.self) { columnIndex in
+                                    let letter = layout.rows[rowIndex][columnIndex]
                                     Text(letter)
-                                        .frame(width: geometry.size.width / CGFloat(rows[0].count), height: geometry.size.height / CGFloat(rows.count))
+                                        .frame(width: geometry.size.width / CGFloat(layout.rows[0].count), height: geometry.size.height / CGFloat(layout.rows.count))
                                         .border(Color.black)
                                         .background(determineBackgroundColor(row: rowIndex, column: columnIndex))
                                 }
@@ -218,16 +246,16 @@ struct SpellingBoardView: View {
     
     func determineLetter(at point: CGPoint, gridSize: CGSize) -> String {
         // Calculate the dimensions of each cell
-        let cellWidth = gridSize.width / CGFloat(rows[0].count)
-        let cellHeight = gridSize.height / CGFloat(rows.count)
+        let cellWidth = gridSize.width / CGFloat(layout.rows[0].count)
+        let cellHeight = gridSize.height / CGFloat(layout.rows.count)
 
         // Calculate the row and column based on the touch point
         let column = Int(point.x / cellWidth)
         let row = Int(point.y / cellHeight)
 
         // Check if the calculated row and column are within the bounds of the grid
-        if row >= 0 && row < rows.count && column >= 0 && column < rows[row].count {
-            return rows[row][column]
+        if row >= 0 && row < layout.rows.count && column >= 0 && column < layout.rows[row].count {
+            return layout.rows[row][column]
         } else {
             // Return an empty string or some default value if the point is outside the grid
             return ""
@@ -264,8 +292,8 @@ struct SpellingBoardView: View {
 
     // Function to determine cell at a point
     func determineCell(at point: CGPoint, gridSize: CGSize) -> (row: Int, column: Int) {
-        let cellWidth = gridSize.width / CGFloat(rows[0].count)
-        let cellHeight = gridSize.height / CGFloat(rows.count)
+        let cellWidth = gridSize.width / CGFloat(layout.rows[0].count)
+        let cellHeight = gridSize.height / CGFloat(layout.rows.count)
 
         let column = Int(point.x / cellWidth)
         let row = Int(point.y / cellHeight)
@@ -289,7 +317,7 @@ struct SpellingBoardView: View {
 
     // Function to select a cell
     func selectCell(_ cell: (row: Int, column: Int)) {
-        let letter = rows[cell.row][cell.column]
+        let letter = layout.rows[cell.row][cell.column]
         updateFormedWordAndSentence(with: letter)
         // Any additional selection logic here
     }
