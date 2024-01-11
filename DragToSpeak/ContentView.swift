@@ -6,6 +6,16 @@ enum DragType: Int {
     case dwell = 2
 }
 
+class TimeStampedPoints {
+    var point: CGPoint
+    var timestamp: Double
+    
+    init(_ point: CGPoint) {
+        self.point = point
+        timestamp = Date().timeIntervalSince1970
+    }
+}
+
 struct SpellingBoardView: View {
     
     @State private var formedWord = ""
@@ -13,6 +23,7 @@ struct SpellingBoardView: View {
     @State private var currentSentence = ""
     
     @State private var dragPoints: [CGPoint] = []
+    @State private var dragPointsWithTimeStamps: [TimeStampedPoints] = []
     @State private var lastDirection: CGVector?
     let angleThreshold = 20 * Double.pi / 180 // Convert 20 degrees to radians
     
@@ -36,7 +47,8 @@ struct SpellingBoardView: View {
     @State var settingsOpen = false
     @AppStorage("dragType") var dragType: DragType = .dwell
     @AppStorage("dwellTime") var dwellTime: Double = 3
-    
+    @AppStorage("showTrail") var showTrail: Bool = true
+
     var body: some View {
         
         VStack(spacing: 0) {
@@ -110,6 +122,12 @@ struct SpellingBoardView: View {
                         }, footer: {
                             Text("The amount of time you must keep your finger on a letter to register a click. This only work in Dwell mode")
                         })
+                        
+                        Section(content: {
+                            Toggle("Show Trail", isOn: $showTrail)
+                        }, footer: {
+                            Text("A trail is shown behind the users finger as they drag about")
+                        })
                     }
                     .navigationTitle("Settings")
                     .toolbar {
@@ -122,17 +140,38 @@ struct SpellingBoardView: View {
                 }
             })
             GeometryReader { geometry in
-                VStack(spacing: 0) {
-                    ForEach(0..<rows.count, id: \.self) { rowIndex in
-                        HStack(spacing: 0) {
-                            ForEach(rows[rowIndex].indices, id: \.self) { columnIndex in
-                                let letter = rows[rowIndex][columnIndex]
-                                Text(letter)
-                                    .frame(width: geometry.size.width / CGFloat(rows[0].count), height: geometry.size.height / CGFloat(rows.count))
-                                    .border(Color.black)
-                                    .background(determineBackgroundColor(row: rowIndex, column: columnIndex))
+                ZStack {
+                    VStack(spacing: 0) {
+                        ForEach(0..<rows.count, id: \.self) { rowIndex in
+                            HStack(spacing: 0) {
+                                ForEach(rows[rowIndex].indices, id: \.self) { columnIndex in
+                                    let letter = rows[rowIndex][columnIndex]
+                                    Text(letter)
+                                        .frame(width: geometry.size.width / CGFloat(rows[0].count), height: geometry.size.height / CGFloat(rows.count))
+                                        .border(Color.black)
+                                        .background(determineBackgroundColor(row: rowIndex, column: columnIndex))
+                                }
                             }
                         }
+                    }
+                    if showTrail {
+                        Path { path in
+                            let validDragPoints = dragPointsWithTimeStamps.filter { point in
+                                let now = Date().timeIntervalSince1970
+                                let timeBetween = now - point.timestamp
+                                return timeBetween < 1
+                            }
+                            
+                            
+                            if let initialDragPoint = validDragPoints.first, validDragPoints.count >= 2 {
+                                path.move(to: initialDragPoint.point)
+                                
+                                for index in 1...(validDragPoints.count - 1) {
+                                    path.addLine(to: validDragPoints[index].point)
+                                }
+                            }
+                        }
+                        .stroke(.blue, style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
                     }
                 }
                 .gesture(
@@ -140,8 +179,17 @@ struct SpellingBoardView: View {
                         .onChanged { value in
                             if dragType == .direction {
                                 dragPoints.append(value.location)
+                                dragPointsWithTimeStamps.append(TimeStampedPoints(value.location))
                                 selectLetter(value.location, gridSize: geometry.size) // Call the function to select the letter
                                 processDragForLetterSelection(gridSize: geometry.size)
+                            }
+                            
+                            if dragType == .dwell {
+                                dragPoints.append(value.location)
+                                dragPointsWithTimeStamps.append(TimeStampedPoints(value.location))
+                                let cell = determineCell(at: value.location, gridSize: geometry.size)
+                                
+                                print(cell)
                             }
                         }
                         .onEnded { _ in
@@ -154,6 +202,8 @@ struct SpellingBoardView: View {
                                 self.currentSentence += " "
                                 self.formedWord = "" // Reset for next word
                                 self.dragPoints.removeAll()
+                                self.dragPointsWithTimeStamps.removeAll()
+
                                 self.lastDirection = nil // Reset the last direction on gesture end
                             }
                         }
