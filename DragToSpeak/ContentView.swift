@@ -67,6 +67,22 @@ struct SpellingBoardView: View {
     @AppStorage("showTrail") var showTrail: Bool = true
     @AppStorage("Layout") var layout: Layout = .alphabetical
     
+    @State var currentlyDwellingCell: (row: Int, column: Int)?
+    @State var dwellWorkItem: DispatchWorkItem?
+    @State var dwellCellSelecteced = false
+    
+    @State private var progressAmount = 0.0
+    let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
+    
+    init() {
+        // This makes it work in silent mode by setting the audio to playback
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+        } catch let error {
+            print("This error message from SpeechSynthesizer \(error.localizedDescription)")
+        }
+    }
+    
     var body: some View {
         
         VStack(spacing: 0) {
@@ -167,6 +183,16 @@ struct SpellingBoardView: View {
                     }
                 }
             })
+            if dragType == .dwell {
+                ProgressView(value: progressAmount, total: 100)
+                    .onReceive(timer) { _ in
+                        // If we have a work item we should bump this
+                        if dwellWorkItem != nil {
+                            let current = 100 / (dwellTime / 0.1)
+                            progressAmount = min(100, progressAmount + current)
+                        }
+                    }
+            }
             GeometryReader { geometry in
                 ZStack {
                     VStack(spacing: 0) {
@@ -215,9 +241,22 @@ struct SpellingBoardView: View {
                             if dragType == .dwell {
                                 dragPoints.append(value.location)
                                 dragPointsWithTimeStamps.append(TimeStampedPoints(value.location))
+                                
                                 let cell = determineCell(at: value.location, gridSize: geometry.size)
                                 
-                                print(cell)
+                                if let unwrappedCurrent = currentlyDwellingCell {
+                                    if unwrappedCurrent != cell {
+                                        // We have moved over into a new cell so start timer
+                                        currentlyDwellingCell = cell
+                                        cancelDwellTimer()
+                                        startDwellTimer()
+                                    }
+                                } else {
+                                    // There was no cell stored so lets clear and start timer
+                                    currentlyDwellingCell = cell
+                                    cancelDwellTimer()
+                                    startDwellTimer()
+                                }
                             }
                         }
                         .onEnded { _ in
@@ -234,15 +273,48 @@ struct SpellingBoardView: View {
 
                                 self.lastDirection = nil // Reset the last direction on gesture end
                             }
+                            
+                            if dragType == .dwell {
+                                // Cancell dwell timer
+                                currentlyDwellingCell = nil
+                                cancelDwellTimer()
+                                
+                                self.speakMessage(self.formedWord)
+                                self.currentSentence += " "
+                                self.formedWord = "" // Reset for next word
+                                self.dragPoints.removeAll()
+                                self.dragPointsWithTimeStamps.removeAll()
+                                self.lastDirection = nil // Reset the last direction on gesture end
+
+                            }
                         }
                     
                 )
             }
-            
         }
     }
     
+    func startDwellTimer() {
+        let newWorkItem = DispatchWorkItem(block: {
+            if let currentCell = currentlyDwellingCell {
+                dwellCellSelecteced = true
+                selectCell(currentCell)
+            }
+            
+        })
+        
+        dwellWorkItem = newWorkItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + dwellTime, execute: newWorkItem)
+    }
     
+    func cancelDwellTimer() {
+        if let unwrappedWorkItem = dwellWorkItem {
+            unwrappedWorkItem.cancel()
+            dwellWorkItem = nil
+        }
+        dwellCellSelecteced = false
+        progressAmount = 0.0
+    }
     
     func determineLetter(at point: CGPoint, gridSize: CGSize) -> String {
         // Calculate the dimensions of each cell
@@ -377,6 +449,13 @@ struct SpellingBoardView: View {
        }
 
     func determineBackgroundColor(row: Int, column: Int) -> Color {
+        if let unrwappedCurrent = currentlyDwellingCell {
+            if row == unrwappedCurrent.row && unrwappedCurrent.column == column {
+                return dwellCellSelecteced ? Color.red : Color.gray
+            }
+        }
+        
+        
         if completedDwellCell?.row == row && completedDwellCell?.column == column {
             return Color.red // Selected cell
         } else if hoveredCell?.row == row && hoveredCell?.column == column {
@@ -421,4 +500,8 @@ struct SpellingBoardView: View {
           let dy = endPoint.y - startPoint.y
           return CGVector(dx: dx, dy: dy)
       }
+}
+
+#Preview {
+    SpellingBoardView()
 }
