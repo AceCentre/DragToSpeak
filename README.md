@@ -1,8 +1,8 @@
 # DragToSpeak
 
 
-<video controls="controls" playsinline="playsinline" src="https://willwa.de/uploads/2024/edited-dragtospeak.mp4" width="600" height="337" poster="https://willwa.de/uploads/2024/c0364ceed9.png" preload="none"></video>
- 
+https://willwa.de/uploads/2024/edited-dragtospeak.mp4
+
 ## Introduction
 
 DragToSpeak is a SwiftUI-based application designed to assist individuals, particularly those with complex disabilities, communicate through a letter selection interface. The app features a drag-to-select mechanism for letter selection and integrates Apple's word prediction engine to correct errors and enhance communication efficiency.
