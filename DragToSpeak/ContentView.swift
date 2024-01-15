@@ -28,16 +28,16 @@ enum Layout: Int {
             ["K", "L", "M", "N", "O"],
             ["P", "Q", "R", "S", "T"],
             ["U", "V", "W", "X", "Y"],
-            ["Z", "Space", "YES", "NO", "Please"],
-            ["Thank you", "OK", "The", " ", " "],
+            ["Z", "Space", "YES", "NO", "Delete"],
+            ["Thank you", "OK", "The", "Please", " "],
             ["0", "1", "2", "3", "4"],
             ["5", "6", "7", "8", "9"]]
         case .frequency:
-            return  [["Space", "E", "A", "R", "D", "U"],
-            ["T", "O", "I", "L", "G", "V"],
-            ["N", "S", "F", "Y", "X", " "],
-            ["H", "C", "P", "K", "J", " "],
-            ["M", "B", "W", "Q", "Z", " "],
+            return  [[" Z", "V", "C", "H", "W", "K"],
+            ["F", "I", "T", "A", "L", "Y"],
+            [" ", "Space", "N", "E", "Delete", " "],
+            ["G", "D", "O", "R", "S", "B"],
+            ["Q", "J", "U", "M", "P", "X"],
             ["Thank you", "OK", "The", "YES", "NO", "PLEASE"],
             ["0", "1", "2", "3", "4", " "],
             ["5", "6", "7", "8", "9", " "]]
@@ -385,13 +385,14 @@ struct SpellingBoardView: View {
         }
     }
 
-
-
     // Function to select a cell
     func selectCell(_ cell: (row: Int, column: Int)) {
         let letter = layout.rows[cell.row][cell.column]
-        updateFormedWordAndSentence(with: letter)
-        // Any additional selection logic here
+        if letter == "Delete" {
+            deleteLastCharacter()
+        } else {
+            updateFormedWordAndSentence(with: letter)
+        }
     }
 
     func processDragForLetterSelection(gridSize: CGSize) {
@@ -467,8 +468,11 @@ struct SpellingBoardView: View {
 
 
     func deleteLastCharacter() {
-               formedWord = String(formedWord.dropLast())
-           }
+        //formedWord = String(formedWord.dropLast())
+        if !currentSentence.isEmpty {
+                currentSentence.removeLast()
+            }
+    }
 
     func speakMessage() {
                speakMessage(currentSentence)
