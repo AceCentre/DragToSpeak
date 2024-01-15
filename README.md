@@ -1,4 +1,5 @@
-# DragToSpak
+# DragToSpeak
+
 
 <video controls="controls" playsinline="playsinline" src="https://willwa.de/uploads/2024/edited-dragtospeak.mp4" width="600" height="337" poster="https://willwa.de/uploads/2024/c0364ceed9.png" preload="none"></video>
  
@@ -9,7 +10,7 @@ DragToSpeak is a SwiftUI-based application designed to assist individuals, parti
 ## Features
 
 - **Two methods for selecting**: Users can select letters by dragging their finger or a pointer across the screen. To detect letters, we have a change in the angle of drag mode (pros: should work for fast dragging but have problems with double letters) or a dwell mode (pros: fewer errors - set your dwell time to something like 0.5)
-- Speech output using inbuilt TTS in iOS (Settings -> Accessibility -> Spoken Content )
+- **Speech output** using inbuilt TTS in iOS (Settings -> Accessibility -> Spoken Content )
 
 
 ## Why not?
