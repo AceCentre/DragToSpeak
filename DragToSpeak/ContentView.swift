@@ -29,16 +29,16 @@ enum Layout: Int {
             ["P", "Q", "R", "S", "T"],
             ["U", "V", "W", "X", "Y"],
             ["Z", "Space", "YES", "NO", "Delete"],
-            ["Thank you", "OK", "The", "Please", " "],
+            ["Thank you", "OK", "The", "Please", "Finish"],
             ["0", "1", "2", "3", "4"],
             ["5", "6", "7", "8", "9"]]
         case .frequency:
             return  [[" Z", "V", "C", "H", "W", "K"],
             ["F", "I", "T", "A", "L", "Y"],
-            [" ", "Space", "N", "E", "Delete", " "],
+            [" ", "Space", "N", "E", "Delete", "Finish"],
             ["G", "D", "O", "R", "S", "B"],
             ["Q", "J", "U", "M", "P", "X"],
-            ["Thank you", "OK", "The", "YES", "NO", "PLEASE"],
+            ["Thank you", "OK", "The", "Yes", "NO", "Please"],
             ["0", "1", "2", "3", "4", " "],
             ["5", "6", "7", "8", "9", " "]]
         }
@@ -63,9 +63,11 @@ struct SpellingBoardView: View {
     
     @State var settingsOpen = false
     @AppStorage("dragType") var dragType: DragType = .dwell
-    @AppStorage("dwellTime") var dwellTime: Double = 3
+    @AppStorage("dwellTime") var dwellTime: Double = 0.5
     @AppStorage("showTrail") var showTrail: Bool = true
     @AppStorage("Layout") var layout: Layout = .alphabetical
+    @AppStorage("autocorrectEnabled") var autocorrectEnabled: Bool = true
+
     
     @State var currentlyDwellingCell: (row: Int, column: Int)?
     @State var dwellWorkItem: DispatchWorkItem?
@@ -88,9 +90,10 @@ struct SpellingBoardView: View {
         VStack(spacing: 0) {
             HStack {
                 // Sentence display row
-                // We dont ever want to display an empty string because that causes the line height to jump about
+                // We dont ever want to display1 an empty string because that causes the line height to jump about
                 // There is probably a better way to do this
-                Text(currentSentence == "" ? " " : currentSentence)
+                Text(currentSentence + formedWord)
+                    .frame(minHeight: 44)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding()
                     .background(Color.gray.opacity(0.2))
@@ -103,12 +106,14 @@ struct SpellingBoardView: View {
                 Button(action: clearMessage) {
                     Image(systemName: "trash")
                 }
+                /*
                 Button(action: deleteLastCharacter) {
                     Image(systemName: "delete.left")
                 }
                 Button(action: speakMessage) {
                     Image(systemName: "speaker.wave.2")
                 }
+                 */
                 Button(action: {
                     settingsOpen = true
                 }) {
@@ -160,7 +165,7 @@ struct SpellingBoardView: View {
                                 } minimumValueLabel: {
                                     Text("0.1s")
                                 } maximumValueLabel: {
-                                    Text("10s")
+                                    Text("2s")
                                 }
                             }
                         }, footer: {
@@ -171,6 +176,12 @@ struct SpellingBoardView: View {
                             Toggle("Show Trail", isOn: $showTrail)
                         }, footer: {
                             Text("A trail is shown behind the users finger as they drag about")
+                        })
+                        
+                        Section(content: {
+                            Toggle("Auto Correct words on Finish", isOn: $autocorrectEnabled)
+                        }, footer: {
+                            Text("Words are autocorrected on finishing a sentence")
                         })
                     }
                     .navigationTitle("Settings")
@@ -216,7 +227,6 @@ struct SpellingBoardView: View {
                                 return timeBetween < 1
                             }
                             
-                            
                             if let initialDragPoint = validDragPoints.first, validDragPoints.count >= 2 {
                                 path.move(to: initialDragPoint.point)
                                 
@@ -261,13 +271,9 @@ struct SpellingBoardView: View {
                         }
                         .onEnded { _ in
                             if dragType == .direction {
-                                // Removed correction just now as it ends up doubling up the output
-                                // TODO Re-enable corrections
-                                // let correctedWord = self.autocorrectWord(self.formedWord.trimmingCharacters(in: .whitespaces)) ?? self.formedWord.trimmingCharacters(in: .whitespaces)
-                                // self.currentSentence += correctedWord + " "
                                 self.speakMessage(self.formedWord)
-                                self.currentSentence += " "
-                                self.formedWord = "" // Reset for next word
+                                //self.currentSentence += formedWord + " "
+                                //self.formedWord = "" // Reset for next word
                                 self.dragPoints.removeAll()
                                 self.dragPointsWithTimeStamps.removeAll()
 
@@ -280,8 +286,8 @@ struct SpellingBoardView: View {
                                 cancelDwellTimer()
                                 
                                 self.speakMessage(self.formedWord)
-                                self.currentSentence += " "
-                                self.formedWord = "" // Reset for next word
+                                //self.currentSentence += " "
+                                //self.formedWord = "" // Reset for next word
                                 self.dragPoints.removeAll()
                                 self.dragPointsWithTimeStamps.removeAll()
                                 self.lastDirection = nil // Reset the last direction on gesture end
@@ -356,12 +362,6 @@ struct SpellingBoardView: View {
     }
 
 
-
-
-
-
-
-
     // Function to determine cell at a point
     func determineCell(at point: CGPoint, gridSize: CGSize) -> (row: Int, column: Int) {
         let cellWidth = gridSize.width / CGFloat(layout.rows[0].count)
@@ -390,6 +390,16 @@ struct SpellingBoardView: View {
         let letter = layout.rows[cell.row][cell.column]
         if letter == "Delete" {
             deleteLastCharacter()
+        } else if letter == "Finish" {
+            print("Before autocorrect: currentSentence='\(currentSentence)', formedWord='\(formedWord)'")
+            currentSentence += formedWord + " "
+            formedWord = "" // Reset formedWord
+            print("Finish button pressed. Current sentence: \(currentSentence)")
+            if autocorrectEnabled {
+                    currentSentence = autocorrectSentence(currentSentence)
+                }
+            print("Autocorrected sentence: \(currentSentence)")
+            speakMessage()
         } else {
             updateFormedWordAndSentence(with: letter)
         }
@@ -416,38 +426,52 @@ struct SpellingBoardView: View {
 
 
     private func updateFormedWordAndSentence(with letter: String) {
-        // Check if the letter is "Space" and handle accordingly
-        if letter == "Space" {
-            // Replace "Space" with an actual space character
-            currentSentence += " "
-            formedWord += "" // Reset for next word
+        if letter == " " || letter == "Space" { // Check for both a space character and the string "Space"
+            currentSentence += formedWord + " "
+            formedWord = ""
         } else {
             formedWord += letter
-            currentSentence += letter
-            checkAndCorrectWordIfNeeded(letter: letter)
         }
     }
 
+    func autocorrectSentence(_ sentence: String) -> String {
+        print("Autocorrecting sentence: \(sentence)")
+        let textChecker = UITextChecker()
+        var correctedSentence = ""
+        let words = sentence.split(separator: " ")
 
-       private func checkAndCorrectWordIfNeeded(letter: String) {
-           if letter == " " {
-               let correctedWord = autocorrectWord(formedWord.trimmingCharacters(in: .whitespaces)) ?? formedWord.trimmingCharacters(in: .whitespaces)
-               currentSentence = currentSentence.trimmingCharacters(in: .whitespaces) + correctedWord + " "
-               formedWord = "" // Reset for next word
-           }
-       }
+        for word in words {
+            let originalWord = String(word)
+            let range = NSRange(location: 0, length: originalWord.utf16.count)
+            let misspelledRange = textChecker.rangeOfMisspelledWord(in: originalWord, range: range, startingAt: 0, wrap: false, language: "en")
 
-       // Implement the autocorrectWord function
-       func autocorrectWord(_ word: String) -> String? {
-           let textChecker = UITextChecker()
-           let range = NSRange(location: 0, length: word.utf16.count)
+            if misspelledRange.location != NSNotFound {
+                print("Misspelled word found: \(originalWord)")
+                if let guesses = textChecker.guesses(forWordRange: misspelledRange, in: originalWord, language: "en"), !guesses.isEmpty {
+                    print("Guesses for \(originalWord): \(guesses)")
+                    let filteredGuesses = guesses.filter { guess in
+                        let isWithinLengthLimit = abs(guess.count - originalWord.count) <= 2
+                        print("Original: \(originalWord), Guess: \(guess), Within Length Limit: \(isWithinLengthLimit)")
+                        return isWithinLengthLimit
+                    }
 
-           let misspelledRange = textChecker.rangeOfMisspelledWord(in: word, range: range, startingAt: 0, wrap: false, language: "en")
-           if misspelledRange.location != NSNotFound, let guesses = textChecker.guesses(forWordRange: misspelledRange, in: word, language: "en"), !guesses.isEmpty {
-               return guesses[0] // Return the first guess
-           }
-           return nil // No correction found
-       }
+                    let correctedWord = filteredGuesses.first ?? originalWord
+                    correctedSentence += correctedWord + " "
+                } else {
+                    print("No guesses found for \(originalWord)")
+                    correctedSentence += originalWord + " "
+                }
+            } else {
+                print("No misspelling found in \(originalWord)")
+                correctedSentence += originalWord + " "
+            }
+        }
+
+        let trimmedCorrectedSentence = correctedSentence.trimmingCharacters(in: .whitespaces)
+        print("Autocorrected sentence: \(trimmedCorrectedSentence)")
+        return trimmedCorrectedSentence
+    }
+
 
     func determineBackgroundColor(row: Int, column: Int) -> Color {
         if let unrwappedCurrent = currentlyDwellingCell {
@@ -468,10 +492,11 @@ struct SpellingBoardView: View {
 
 
     func deleteLastCharacter() {
-        //formedWord = String(formedWord.dropLast())
-        if !currentSentence.isEmpty {
-                currentSentence.removeLast()
-            }
+        if !formedWord.isEmpty {
+            formedWord.removeLast()
+        } else if !currentSentence.isEmpty {
+            currentSentence.removeLast()
+        }
     }
 
     func speakMessage() {
@@ -482,9 +507,13 @@ struct SpellingBoardView: View {
            let utterance = AVSpeechUtterance(string: word)
            speechSynthesizer.speak(utterance)
        }
+    
+    
     func clearMessage() {
-               currentSentence = ""
-           }
+        currentSentence = ""
+        formedWord = "" // Reset the formed word as well
+    }
+
     
     
     func didChangeDirection(from oldDirection: CGVector, to newDirection: CGVector) -> Bool {
