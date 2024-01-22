@@ -17,6 +17,16 @@ class TimeStampedPoints {
     }
 }
 
+struct CorrectionResponse: Decodable {
+    let correctedSentence: String
+
+    enum CodingKeys: String, CodingKey {
+        case correctedSentence = "corrected_sentence"
+    }
+}
+
+
+
 enum Layout: Int {
     case alphabetical
     case frequency
@@ -110,6 +120,8 @@ struct SpellingBoardView: View {
     @AppStorage("Layout") var layout: Layout = .alphabetical
     @AppStorage("autocorrectEnabled") var autocorrectEnabled: Bool = true
     @AppStorage("hasLaunchedBefore") var hasLaunchedBefore: Bool = false
+    @AppStorage("writeWithoutSpacesEnabled") var writeWithoutSpacesEnabled: Bool = false
+
 
     
     @State var currentlyDwellingCell: (row: Int, column: Int)?
@@ -225,6 +237,12 @@ struct SpellingBoardView: View {
                                 Toggle("Auto Correct words on Finish", isOn: $autocorrectEnabled)
                             }, footer: {
                                 Text("Words are autocorrected on finishing a sentence")
+                            })
+                            
+                            Section(content: {
+                                Toggle("Write Without Spaces", isOn: $writeWithoutSpacesEnabled)
+                            }, footer: {
+                                Text("If you write without selecting space try using this feature. It requires you to be online and may not work!")
                             })
                             
                             Section(content: {
@@ -450,18 +468,37 @@ struct SpellingBoardView: View {
             deleteLastCharacter()
         } else if letter == "Finish" {
             print("Before autocorrect: currentSentence='\(currentSentence)', formedWord='\(formedWord)'")
-            currentSentence += formedWord + " "
+            let fullSentence = currentSentence + formedWord
             formedWord = "" // Reset formedWord
-            print("Finish button pressed. Current sentence: \(currentSentence)")
-            if autocorrectEnabled {
-                    currentSentence = autocorrectSentence(currentSentence)
+
+            if writeWithoutSpacesEnabled {
+                correctNoSpaceSentence(fullSentence) { correctedSentence in
+                    DispatchQueue.main.async {
+                        if let corrected = correctedSentence {
+                            self.currentSentence = corrected
+                        } else {
+                            self.currentSentence = fullSentence // Fallback in case of error
+                        }
+                        self.postCorrectionProcessing()
+                    }
                 }
-            print("Autocorrected sentence: \(currentSentence)")
-            speakMessage()
+            } else {
+                currentSentence = fullSentence
+                postCorrectionProcessing()
+            }
         } else {
             updateFormedWordAndSentence(with: letter)
         }
     }
+
+    func postCorrectionProcessing() {
+        if autocorrectEnabled {
+            currentSentence = autocorrectSentence(currentSentence)
+        }
+        print("Processed sentence: \(currentSentence)")
+        speakMessage()
+    }
+
 
     func processDragForLetterSelection(gridSize: CGSize) {
         guard dragPoints.count >= 2 else { return }
@@ -591,6 +628,41 @@ struct SpellingBoardView: View {
           let dy = endPoint.y - startPoint.y
           return CGVector(dx: dx, dy: dy)
       }
+    
+    func correctNoSpaceSentence(_ text: String, completion: @escaping (String?) -> Void) {
+        guard let url = URL(string: "https://correctasentence.acecentre.net/correction/correct_sentence") else {
+            completion(nil)
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = [
+            "text": text,
+            "correct_typos": false
+        ]
+
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                completion(nil)
+                return
+            }
+
+            do {
+                let responseObj = try JSONDecoder().decode(CorrectionResponse.self, from: data)
+                completion(responseObj.correctedSentence)
+            } catch {
+                print("Error decoding response: \(error)")
+                completion(nil)
+            }
+        }.resume()
+    }
+
+
 }
 
 #Preview {
