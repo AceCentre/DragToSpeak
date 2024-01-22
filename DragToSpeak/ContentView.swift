@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import AVKit
 
 enum DragType: Int {
     case direction = 1
@@ -45,10 +46,51 @@ enum Layout: Int {
     }
 }
 
+struct DeviceOrientationKey: EnvironmentKey {
+    static let defaultValue: UIDeviceOrientation = UIDevice.current.orientation
+}
+
+extension EnvironmentValues {
+    var deviceOrientation: UIDeviceOrientation {
+        get { self[DeviceOrientationKey.self] }
+        set { self[DeviceOrientationKey.self] = newValue }
+    }
+}
+
+// Onboarding View
+struct OnboardingView: View {
+    @Environment(\.deviceOrientation) var deviceOrientation
+    @AppStorage("hasLaunchedBefore") var hasLaunchedBefore: Bool = false
+
+    private var player: AVPlayer {
+        let videoName = deviceOrientation.isLandscape ? "LandscapeVideo" : "PortraitVideo"
+        if let url = Bundle.main.url(forResource: videoName, withExtension: "mp4") {
+            return AVPlayer(url: url)
+        } else {
+            fatalError("Video file not found \(videoName).mp4")
+        }
+    }
+
+
+    var body: some View {
+        VStack {
+            VideoPlayer(player: player)
+                .onAppear {
+                    player.play()
+                }
+                    Button("Continue") {
+                        hasLaunchedBefore = true
+                    }
+                }
+    }
+}
+
+
 struct SpellingBoardView: View {
     @State private var formedWord = ""
     @State private var completedDwellCell: (row: Int, column: Int)? = nil
     @State private var currentSentence = ""
+    
     
     @State private var dragPoints: [CGPoint] = []
     @State private var dragPointsWithTimeStamps: [TimeStampedPoints] = []
@@ -67,6 +109,7 @@ struct SpellingBoardView: View {
     @AppStorage("showTrail") var showTrail: Bool = true
     @AppStorage("Layout") var layout: Layout = .alphabetical
     @AppStorage("autocorrectEnabled") var autocorrectEnabled: Bool = true
+    @AppStorage("hasLaunchedBefore") var hasLaunchedBefore: Bool = false
 
     
     @State var currentlyDwellingCell: (row: Int, column: Int)?
@@ -86,218 +129,233 @@ struct SpellingBoardView: View {
     }
     
     var body: some View {
-        
-        VStack(spacing: 0) {
-            HStack {
-                // Sentence display row
-                // We dont ever want to display1 an empty string because that causes the line height to jump about
-                // There is probably a better way to do this
-                Text(currentSentence + formedWord)
-                    .frame(minHeight: 44)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding()
-                    .background(Color.gray.opacity(0.2))
-                    .border(Color.gray)
-                    .layoutPriority(1) // Ensures the text field expands
-                
-                Spacer()
-                
-                // Buttons for additional functions
-                Button(action: clearMessage) {
-                    Image(systemName: "trash")
+        if hasLaunchedBefore {
+            VStack(spacing: 0) {
+                HStack {
+                    // Sentence display row
+                    // We dont ever want to display1 an empty string because that causes the line height to jump about
+                    // There is probably a better way to do this
+                    Text(currentSentence + formedWord)
+                        .frame(minHeight: 44)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
+                        .background(Color.gray.opacity(0.2))
+                        .border(Color.gray)
+                        .layoutPriority(1) // Ensures the text field expands
+                    
+                    Spacer()
+                    
+                    // Buttons for additional functions
+                    Button(action: clearMessage) {
+                        Image(systemName: "trash")
+                    }
+                    /*
+                     Button(action: deleteLastCharacter) {
+                     Image(systemName: "delete.left")
+                     }
+                     Button(action: speakMessage) {
+                     Image(systemName: "speaker.wave.2")
+                     }
+                     */
+                    Button(action: {
+                        settingsOpen = true
+                    }) {
+                        Image(systemName: "gear")
+                    }.padding(.trailing)
                 }
-                /*
-                Button(action: deleteLastCharacter) {
-                    Image(systemName: "delete.left")
-                }
-                Button(action: speakMessage) {
-                    Image(systemName: "speaker.wave.2")
-                }
-                 */
-                Button(action: {
-                    settingsOpen = true
-                }) {
-                    Image(systemName: "gear")
-                }.padding(.trailing)
-            }
-            .sheet(isPresented: $settingsOpen, content: {
-                NavigationStack {
-                    Form {
-                        Section(content: {
-                            VStack(alignment: .leading) {
-                                Label("Drag Type", systemImage: "hand.draw")
-                                    .labelStyle(.titleOnly)
-                                Picker("Drag Type", selection: $dragType) {
-                                    Text("Direction Change").tag(DragType.direction)
-                                    Text("Dwell").tag(DragType.dwell)
-                                }
-                                .pickerStyle(.segmented)
-                            }.frame(alignment: .leading)
-                        }, footer: {
-                            Text("Change how we calculate letter selection")
+                .sheet(isPresented: $settingsOpen, content: {
+                    NavigationStack {
+                        Form {
+                            Section(content: {
+                                VStack(alignment: .leading) {
+                                    Label("Drag Type", systemImage: "hand.draw")
+                                        .labelStyle(.titleOnly)
+                                    Picker("Drag Type", selection: $dragType) {
+                                        Text("Direction Change").tag(DragType.direction)
+                                        Text("Dwell").tag(DragType.dwell)
+                                    }
+                                    .pickerStyle(.segmented)
+                                }.frame(alignment: .leading)
+                            }, footer: {
+                                Text("Change how we calculate letter selection")
+                                
+                            })
                             
-                        })
-                        
-                        Section(content: {
-                            Picker("Layout", selection: $layout) {
-                                Text("Alphabetical").tag(Layout.alphabetical)
-                                Text("Frequency").tag(Layout.frequency)
-                            }
-                            
-                        }, footer: {
-                            Text("The layout of the letters on the grid")
-                        })
-                        
-                        Section(content: {
-                            VStack {
-                                HStack {
-                                    Text("Dwell Time")
-                                    Spacer()
-                                    Text(String(format: "%.2f", dwellTime))
+                            Section(content: {
+                                Picker("Layout", selection: $layout) {
+                                    Text("Alphabetical").tag(Layout.alphabetical)
+                                    Text("Frequency").tag(Layout.frequency)
                                 }
                                 
-                                Slider(
-                                    value: $dwellTime,
-                                    in: 0.1...10,
-                                    step: 0.1
-                                ) {
-                                    Text("Dwell Time")
-                                } minimumValueLabel: {
-                                    Text("0.1s")
-                                } maximumValueLabel: {
-                                    Text("2s")
+                            }, footer: {
+                                Text("The layout of the letters on the grid")
+                            })
+                            
+                            Section(content: {
+                                VStack {
+                                    HStack {
+                                        Text("Dwell Time")
+                                        Spacer()
+                                        Text(String(format: "%.2f", dwellTime))
+                                    }
+                                    
+                                    Slider(
+                                        value: $dwellTime,
+                                        in: 0.1...10,
+                                        step: 0.1
+                                    ) {
+                                        Text("Dwell Time")
+                                    } minimumValueLabel: {
+                                        Text("0.1s")
+                                    } maximumValueLabel: {
+                                        Text("2s")
+                                    }
                                 }
-                            }
-                        }, footer: {
-                            Text("The amount of time you must keep your finger on a letter to register a click. This only work in Dwell mode")
-                        })
-                        
-                        Section(content: {
-                            Toggle("Show Trail", isOn: $showTrail)
-                        }, footer: {
-                            Text("A trail is shown behind the users finger as they drag about")
-                        })
-                        
-                        Section(content: {
-                            Toggle("Auto Correct words on Finish", isOn: $autocorrectEnabled)
-                        }, footer: {
-                            Text("Words are autocorrected on finishing a sentence")
-                        })
-                    }
-                    .navigationTitle("Settings")
-                    .toolbar {
-                        ToolbarItemGroup(placement:.primaryAction) {
-                            Button("Done") {
-                                settingsOpen = false
-                            }
+                            }, footer: {
+                                Text("The amount of time you must keep your finger on a letter to register a click. This only work in Dwell mode")
+                            })
+                            
+                            Section(content: {
+                                Toggle("Show Trail", isOn: $showTrail)
+                            }, footer: {
+                                Text("A trail is shown behind the users finger as they drag about")
+                            })
+                            
+                            Section(content: {
+                                Toggle("Auto Correct words on Finish", isOn: $autocorrectEnabled)
+                            }, footer: {
+                                Text("Words are autocorrected on finishing a sentence")
+                            })
+                            
+                            Section(content: {
+                                Button("Reset Onboarding") {
+                                                hasLaunchedBefore = false
+                                            }
+                            }, footer: {
+                                Text("If you want to watch the introduction video again turn this on")
+                            })
                         }
-                    }
-                }
-            })
-            if dragType == .dwell {
-                ProgressView(value: progressAmount, total: 100)
-                    .onReceive(timer) { _ in
-                        // If we have a work item we should bump this
-                        if dwellWorkItem != nil {
-                            let current = 100 / (dwellTime / 0.1)
-                            progressAmount = min(100, progressAmount + current)
-                        }
-                    }
-            }
-            GeometryReader { geometry in
-                ZStack {
-                    VStack(spacing: 0) {
-                        ForEach(0..<layout.rows.count, id: \.self) { rowIndex in
-                            HStack(spacing: 0) {
-                                ForEach(layout.rows[rowIndex].indices, id: \.self) { columnIndex in
-                                    let letter = layout.rows[rowIndex][columnIndex]
-                                    Text(letter)
-                                        .frame(width: geometry.size.width / CGFloat(layout.rows[0].count), height: geometry.size.height / CGFloat(layout.rows.count))
-                                        .border(Color.black)
-                                        .background(determineBackgroundColor(row: rowIndex, column: columnIndex))
+                        .navigationTitle("Settings")
+                        .toolbar {
+                            ToolbarItemGroup(placement:.primaryAction) {
+                                Button("Done") {
+                                    settingsOpen = false
                                 }
                             }
                         }
+                        
+                        
+                        
                     }
-                    if showTrail {
-                        Path { path in
-                            let validDragPoints = dragPointsWithTimeStamps.filter { point in
-                                let now = Date().timeIntervalSince1970
-                                let timeBetween = now - point.timestamp
-                                return timeBetween < 1
+                })
+                if dragType == .dwell {
+                    ProgressView(value: progressAmount, total: 100)
+                        .onReceive(timer) { _ in
+                            // If we have a work item we should bump this
+                            if dwellWorkItem != nil {
+                                let current = 100 / (dwellTime / 0.1)
+                                progressAmount = min(100, progressAmount + current)
                             }
-                            
-                            if let initialDragPoint = validDragPoints.first, validDragPoints.count >= 2 {
-                                path.move(to: initialDragPoint.point)
-                                
-                                for index in 1...(validDragPoints.count - 1) {
-                                    path.addLine(to: validDragPoints[index].point)
+                        }
+                }
+                GeometryReader { geometry in
+                    ZStack {
+                        VStack(spacing: 0) {
+                            ForEach(0..<layout.rows.count, id: \.self) { rowIndex in
+                                HStack(spacing: 0) {
+                                    ForEach(layout.rows[rowIndex].indices, id: \.self) { columnIndex in
+                                        let letter = layout.rows[rowIndex][columnIndex]
+                                        Text(letter)
+                                            .frame(width: geometry.size.width / CGFloat(layout.rows[0].count), height: geometry.size.height / CGFloat(layout.rows.count))
+                                            .border(Color.black)
+                                            .background(determineBackgroundColor(row: rowIndex, column: columnIndex))
+                                    }
                                 }
                             }
                         }
-                        .stroke(.blue, style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
-                    }
-                }
-                .gesture(
-                    DragGesture(minimumDistance: 0, coordinateSpace: .local)
-                        .onChanged { value in
-                            if dragType == .direction {
-                                dragPoints.append(value.location)
-                                dragPointsWithTimeStamps.append(TimeStampedPoints(value.location))
-                                selectLetter(value.location, gridSize: geometry.size) // Call the function to select the letter
-                                processDragForLetterSelection(gridSize: geometry.size)
+                        if showTrail {
+                            Path { path in
+                                let validDragPoints = dragPointsWithTimeStamps.filter { point in
+                                    let now = Date().timeIntervalSince1970
+                                    let timeBetween = now - point.timestamp
+                                    return timeBetween < 1
+                                }
+                                
+                                if let initialDragPoint = validDragPoints.first, validDragPoints.count >= 2 {
+                                    path.move(to: initialDragPoint.point)
+                                    
+                                    for index in 1...(validDragPoints.count - 1) {
+                                        path.addLine(to: validDragPoints[index].point)
+                                    }
+                                }
                             }
-                            
-                            if dragType == .dwell {
-                                dragPoints.append(value.location)
-                                dragPointsWithTimeStamps.append(TimeStampedPoints(value.location))
+                            .stroke(.blue, style: StrokeStyle(lineWidth: 10, lineCap: .round, lineJoin: .round))
+                        }
+                    }
+                    .gesture(
+                        DragGesture(minimumDistance: 0, coordinateSpace: .local)
+                            .onChanged { value in
+                                if dragType == .direction {
+                                    dragPoints.append(value.location)
+                                    dragPointsWithTimeStamps.append(TimeStampedPoints(value.location))
+                                    selectLetter(value.location, gridSize: geometry.size) // Call the function to select the letter
+                                    processDragForLetterSelection(gridSize: geometry.size)
+                                }
                                 
-                                let cell = determineCell(at: value.location, gridSize: geometry.size)
-                                
-                                if let unwrappedCurrent = currentlyDwellingCell {
-                                    if unwrappedCurrent != cell {
-                                        // We have moved over into a new cell so start timer
+                                if dragType == .dwell {
+                                    dragPoints.append(value.location)
+                                    dragPointsWithTimeStamps.append(TimeStampedPoints(value.location))
+                                    
+                                    let cell = determineCell(at: value.location, gridSize: geometry.size)
+                                    
+                                    if let unwrappedCurrent = currentlyDwellingCell {
+                                        if unwrappedCurrent != cell {
+                                            // We have moved over into a new cell so start timer
+                                            currentlyDwellingCell = cell
+                                            cancelDwellTimer()
+                                            startDwellTimer()
+                                        }
+                                    } else {
+                                        // There was no cell stored so lets clear and start timer
                                         currentlyDwellingCell = cell
                                         cancelDwellTimer()
                                         startDwellTimer()
                                     }
-                                } else {
-                                    // There was no cell stored so lets clear and start timer
-                                    currentlyDwellingCell = cell
-                                    cancelDwellTimer()
-                                    startDwellTimer()
                                 }
                             }
-                        }
-                        .onEnded { _ in
-                            if dragType == .direction {
-                                self.speakMessage(self.formedWord)
-                                //self.currentSentence += formedWord + " "
-                                //self.formedWord = "" // Reset for next word
-                                self.dragPoints.removeAll()
-                                self.dragPointsWithTimeStamps.removeAll()
-
-                                self.lastDirection = nil // Reset the last direction on gesture end
-                            }
-                            
-                            if dragType == .dwell {
-                                // Cancell dwell timer
-                                currentlyDwellingCell = nil
-                                cancelDwellTimer()
+                            .onEnded { _ in
+                                if dragType == .direction {
+                                    self.speakMessage(self.formedWord)
+                                    //self.currentSentence += formedWord + " "
+                                    //self.formedWord = "" // Reset for next word
+                                    self.dragPoints.removeAll()
+                                    self.dragPointsWithTimeStamps.removeAll()
+                                    
+                                    self.lastDirection = nil // Reset the last direction on gesture end
+                                }
                                 
-                                self.speakMessage(self.formedWord)
-                                //self.currentSentence += " "
-                                //self.formedWord = "" // Reset for next word
-                                self.dragPoints.removeAll()
-                                self.dragPointsWithTimeStamps.removeAll()
-                                self.lastDirection = nil // Reset the last direction on gesture end
-
+                                if dragType == .dwell {
+                                    // Cancell dwell timer
+                                    currentlyDwellingCell = nil
+                                    cancelDwellTimer()
+                                    
+                                    self.speakMessage(self.formedWord)
+                                    //self.currentSentence += " "
+                                    //self.formedWord = "" // Reset for next word
+                                    self.dragPoints.removeAll()
+                                    self.dragPointsWithTimeStamps.removeAll()
+                                    self.lastDirection = nil // Reset the last direction on gesture end
+                                    
+                                }
                             }
-                        }
-                    
-                )
+                        
+                    )
+                }
             }
-        }
+        } else {
+            OnboardingView()
+                
+                }
     }
     
     func startDwellTimer() {

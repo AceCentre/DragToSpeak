@@ -14,6 +14,8 @@
 		3F1CAB242B0CB33600D49ADE /* DragToSpeakTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F1CAB232B0CB33600D49ADE /* DragToSpeakTests.swift */; };
 		3F1CAB2E2B0CB33600D49ADE /* DragToSpeakUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F1CAB2D2B0CB33600D49ADE /* DragToSpeakUITests.swift */; };
 		3F1CAB302B0CB33600D49ADE /* DragToSpeakUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F1CAB2F2B0CB33600D49ADE /* DragToSpeakUITestsLaunchTests.swift */; };
+		3F71AF542B5ECCAD00BCA7EF /* LandscapeVideo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 3F71AF522B5EC68D00BCA7EF /* LandscapeVideo.mp4 */; };
+		3F71AF552B5ECCB100BCA7EF /* PortraitVideo.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 3F71AF532B5EC84700BCA7EF /* PortraitVideo.mp4 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,6 +46,8 @@
 		3F1CAB292B0CB33600D49ADE /* DragToSpeakUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DragToSpeakUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3F1CAB2D2B0CB33600D49ADE /* DragToSpeakUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragToSpeakUITests.swift; sourceTree = "<group>"; };
 		3F1CAB2F2B0CB33600D49ADE /* DragToSpeakUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragToSpeakUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		3F71AF522B5EC68D00BCA7EF /* LandscapeVideo.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = LandscapeVideo.mp4; sourceTree = "<group>"; };
+		3F71AF532B5EC84700BCA7EF /* PortraitVideo.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = PortraitVideo.mp4; sourceTree = "<group>"; };
 		D56688D52B5030A00059046C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -95,6 +99,8 @@
 		3F1CAB112B0CB33000D49ADE /* DragToSpeak */ = {
 			isa = PBXGroup;
 			children = (
+				3F71AF522B5EC68D00BCA7EF /* LandscapeVideo.mp4 */,
+				3F71AF532B5EC84700BCA7EF /* PortraitVideo.mp4 */,
 				D56688D52B5030A00059046C /* Info.plist */,
 				3F1CAB122B0CB33000D49ADE /* DragToSpeakApp.swift */,
 				3F1CAB142B0CB33000D49ADE /* ContentView.swift */,
@@ -233,7 +239,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3F71AF552B5ECCB100BCA7EF /* PortraitVideo.mp4 in Resources */,
 				3F1CAB1A2B0CB33500D49ADE /* Preview Assets.xcassets in Resources */,
+				3F71AF542B5ECCAD00BCA7EF /* LandscapeVideo.mp4 in Resources */,
 				3F1CAB172B0CB33500D49ADE /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
