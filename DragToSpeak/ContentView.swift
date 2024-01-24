@@ -30,6 +30,7 @@ struct CorrectionResponse: Decodable {
 enum Layout: Int {
     case alphabetical
     case frequency
+    case qwerty
     
     var rows: [[String]] {
         switch self {
@@ -52,6 +53,13 @@ enum Layout: Int {
             ["Thank you", "OK", "The", "Yes", "NO", "Please"],
             ["0", "1", "2", "3", "4", " "],
             ["5", "6", "7", "8", "9", " "]]
+        case .qwerty:
+            return [["All done", "Thanks", "Can you help me", "", ""],
+            ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
+            ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+            ["A", "S", "D", "F", "G", "H", "J", "K", "L", "Some word"],
+            ["Z", "X", "C", "V", "B", "N", "M", "", "?", "I need the toilet"],
+            ["Finish", "Space", "Delete"]]
         }
     }
 }
@@ -197,6 +205,7 @@ struct SpellingBoardView: View {
                                 Picker("Layout", selection: $layout) {
                                     Text("Alphabetical").tag(Layout.alphabetical)
                                     Text("Frequency").tag(Layout.frequency)
+                                    Text("QWERTY").tag(Layout.qwerty)
                                 }
                                 
                             }, footer: {
@@ -284,9 +293,10 @@ struct SpellingBoardView: View {
                                     ForEach(layout.rows[rowIndex].indices, id: \.self) { columnIndex in
                                         let letter = layout.rows[rowIndex][columnIndex]
                                         Text(letter)
-                                            .frame(width: geometry.size.width / CGFloat(layout.rows[0].count), height: geometry.size.height / CGFloat(layout.rows.count))
+                                            .frame(width: self.keyWidth(for: rowIndex, in: geometry.size),
+                                                   height: geometry.size.height / CGFloat(layout.rows.count))
+                                            .background(self.determineBackgroundColor(row: rowIndex, column: columnIndex))
                                             .border(Color.black)
-                                            .background(determineBackgroundColor(row: rowIndex, column: columnIndex))
                                     }
                                 }
                             }
@@ -374,6 +384,10 @@ struct SpellingBoardView: View {
             OnboardingView()
                 
                 }
+    }
+    func keyWidth(for row: Int, in size: CGSize) -> CGFloat {
+        let numberOfKeysInRow = CGFloat(layout.rows[row].count)
+        return size.width / numberOfKeysInRow
     }
     
     func startDwellTimer() {
