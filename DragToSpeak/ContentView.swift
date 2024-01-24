@@ -454,14 +454,16 @@ struct SpellingBoardView: View {
 
     // Function to determine cell at a point
     func determineCell(at point: CGPoint, gridSize: CGSize) -> (row: Int, column: Int) {
-        let cellWidth = gridSize.width / CGFloat(layout.rows[0].count)
-        let cellHeight = gridSize.height / CGFloat(layout.rows.count)
+        let rowHeight = gridSize.height / CGFloat(layout.rows.count)
+        let row = Int(point.y / rowHeight)
 
-        let column = Int(point.x / cellWidth)
-        let row = Int(point.y / cellHeight)
+        let numberOfColumnsInRow = CGFloat(layout.rows[row].count)
+        let columnWidth = gridSize.width / numberOfColumnsInRow
+        let column = Int(point.x / columnWidth)
 
         return (row, column)
     }
+
 
     // Function to check dwell time
     func checkDwellTime() {
