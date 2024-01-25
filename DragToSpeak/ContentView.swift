@@ -502,6 +502,11 @@ struct SpellingBoardView: View {
 
     // Function to select a cell
     func selectCell(_ cell: (row: Int, column: Int)) {
+        guard cell.row >= 0, cell.row < layout.rows.count,
+                  cell.column >= 0, cell.column < layout.rows[cell.row].count else {
+                print("Index out of range: row \(cell.row), column \(cell.column)")
+                return
+            }
         let letter = layout.rows[cell.row][cell.column]
         if letter == "Delete" {
             deleteLastCharacter()
