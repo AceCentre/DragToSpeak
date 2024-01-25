@@ -286,8 +286,10 @@ struct SpellingBoardView: View {
                 if dragType == .dwell {
                     ProgressView(value: progressAmount, total: 100)
                         .onReceive(timer) { _ in
-                            // If we have a work item we should bump this
-                            if dwellWorkItem != nil {
+                            // Ensure dwellTime is within a reasonable range
+                            guard dwellTime > 0.05 else { return } // Example minimum dwell time
+
+                            if let dwellWorkItem = dwellWorkItem {
                                 let current = 100 / (dwellTime / 0.1)
                                 progressAmount = min(100, progressAmount + current)
                             }
