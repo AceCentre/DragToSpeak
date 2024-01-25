@@ -161,7 +161,7 @@ struct SpellingBoardView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
                         .background(Color.gray.opacity(0.2))
-                        .border(Color.gray)
+                        .border(Color(UIColor.separator))
                         .layoutPriority(1) // Ensures the text field expands
                     
                     Spacer()
@@ -305,7 +305,7 @@ struct SpellingBoardView: View {
                                             .frame(width: self.keyWidth(for: rowIndex, in: geometry.size),
                                                    height: geometry.size.height / CGFloat(layout.rows.count))
                                             .background(self.determineBackgroundColor(row: rowIndex, column: columnIndex))
-                                            .border(Color.black)
+                                            .border(Color(UIColor.separator))
                                     }
                                 }
                             }
