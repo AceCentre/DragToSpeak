@@ -108,7 +108,8 @@ struct SpellingBoardView: View {
     @State private var formedWord = ""
     @State private var completedDwellCell: (row: Int, column: Int)? = nil
     @State private var currentSentence = ""
-    
+    @State private var hoveredButton: (row: Int, column: Int)? = nil
+
     
     @State private var dragPoints: [CGPoint] = []
     @State private var dragPointsWithTimeStamps: [TimeStampedPoints] = []
@@ -129,7 +130,7 @@ struct SpellingBoardView: View {
     @AppStorage("autocorrectEnabled") var autocorrectEnabled: Bool = true
     @AppStorage("hasLaunchedBefore") var hasLaunchedBefore: Bool = false
     @AppStorage("writeWithoutSpacesEnabled") var writeWithoutSpacesEnabled: Bool = false
-
+    @AppStorage("enlargeKeys") var enlargeKeys: Bool = false
 
     
     @State var currentlyDwellingCell: (row: Int, column: Int)?
@@ -243,6 +244,13 @@ struct SpellingBoardView: View {
                             })
                             
                             Section(content: {
+                                Toggle("Enlarge Keys on Hover", isOn: $enlargeKeys)
+                            }, footer: {
+                                Text("As you move over keys they will enlarge to help you see them")
+                            })
+                            
+                            
+                            Section(content: {
                                 Toggle("Auto Correct words on Finish", isOn: $autocorrectEnabled)
                             }, footer: {
                                 Text("Words are autocorrected on finishing a sentence")
@@ -293,6 +301,7 @@ struct SpellingBoardView: View {
                                     ForEach(layout.rows[rowIndex].indices, id: \.self) { columnIndex in
                                         let letter = layout.rows[rowIndex][columnIndex]
                                         Text(letter)
+                                            .scaleEffect((self.isHovered(row: rowIndex, column: columnIndex) && enlargeKeys) ? 3 : 1.0)
                                             .frame(width: self.keyWidth(for: rowIndex, in: geometry.size),
                                                    height: geometry.size.height / CGFloat(layout.rows.count))
                                             .background(self.determineBackgroundColor(row: rowIndex, column: columnIndex))
@@ -350,6 +359,11 @@ struct SpellingBoardView: View {
                                         startDwellTimer()
                                     }
                                 }
+                                
+                                if enlargeKeys {
+                                                let cell = determineCell(at: value.location, gridSize: geometry.size)
+                                                hoveredButton = cell // Update hovered button only if the setting is enabled
+                                            }
                             }
                             .onEnded { _ in
                                 if dragType == .direction {
@@ -375,6 +389,10 @@ struct SpellingBoardView: View {
                                     self.lastDirection = nil // Reset the last direction on gesture end
                                     
                                 }
+                                
+                                if enlargeKeys {
+                                        hoveredButton = nil // Reset hovered button
+                                    }
                             }
                         
                     )
@@ -385,6 +403,11 @@ struct SpellingBoardView: View {
                 
                 }
     }
+    
+    func isHovered(row: Int, column: Int) -> Bool {
+        return hoveredButton?.row == row && hoveredButton?.column == column
+    }
+
     func keyWidth(for row: Int, in size: CGSize) -> CGFloat {
         let numberOfKeysInRow = CGFloat(layout.rows[row].count)
         return size.width / numberOfKeysInRow
@@ -585,14 +608,16 @@ struct SpellingBoardView: View {
 
 
     func determineBackgroundColor(row: Int, column: Int) -> Color {
-        if let unrwappedCurrent = currentlyDwellingCell {
-            if row == unrwappedCurrent.row && unrwappedCurrent.column == column {
-                return dwellCellSelecteced ? Color.red : Color.gray
-            }
-        }
-        
-        
-        if completedDwellCell?.row == row && completedDwellCell?.column == column {
+        let letter = layout.rows[row][column]
+
+        // Check for specific function keys
+        if letter == "Finish" {
+            return Color.green.opacity(0.5)  // Or any color that signifies 'action' or 'complete'
+        } else if letter == "Space" {
+            return Color.blue.opacity(0.5)  // Or a different color to indicate 'space'
+        } else if let unwrappedCurrent = currentlyDwellingCell, unwrappedCurrent.row == row && unwrappedCurrent.column == column {
+            return dwellCellSelecteced ? Color.red : Color.gray
+        } else if completedDwellCell?.row == row && completedDwellCell?.column == column {
             return Color.red // Selected cell
         } else if hoveredCell?.row == row && hoveredCell?.column == column {
             return Color.gray // Currently hovered cell
@@ -600,6 +625,7 @@ struct SpellingBoardView: View {
             return Color.clear
         }
     }
+
 
 
     func deleteLastCharacter() {
