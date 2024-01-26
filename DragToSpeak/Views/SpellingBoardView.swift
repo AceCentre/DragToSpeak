@@ -1,110 +1,17 @@
+//
+//  SpellingBoardView.swift
+//  DragToSpeak
+//
+//  Created by Will Wade on 26/01/2024.
+//
 import SwiftUI
 import AVFoundation
 import AVKit
 
-enum DragType: Int {
-    case direction = 1
-    case dwell = 2
-}
-
-class TimeStampedPoints {
-    var point: CGPoint
-    var timestamp: Double
-    
-    init(_ point: CGPoint) {
-        self.point = point
-        timestamp = Date().timeIntervalSince1970
-    }
-}
-
-struct CorrectionResponse: Decodable {
-    let correctedSentence: String
-
-    enum CodingKeys: String, CodingKey {
-        case correctedSentence = "corrected_sentence"
-    }
-}
-
-
-
-enum Layout: Int {
-    case alphabetical
-    case frequency
-    case qwerty
-    
-    var rows: [[String]] {
-        switch self {
-        case .alphabetical:
-            return [["A", "B", "C", "D", "E"],
-            ["F", "G", "H", "I", "J"],
-            ["K", "L", "M", "N", "O"],
-            ["P", "Q", "R", "S", "T"],
-            ["U", "V", "W", "X", "Y"],
-            ["Z", "Space", "YES", "NO", "Delete"],
-            ["Thank you", "OK", "The", "Please", "Finish"],
-            ["0", "1", "2", "3", "4"],
-            ["5", "6", "7", "8", "9"]]
-        case .frequency:
-            return  [[" Z", "V", "C", "H", "W", "K"],
-            ["F", "I", "T", "A", "L", "Y"],
-            [" ", "Space", "N", "E", "Delete", "Finish"],
-            ["G", "D", "O", "R", "S", "B"],
-            ["Q", "J", "U", "M", "P", "X"],
-            ["Thank you", "OK", "The", "Yes", "NO", "Please"],
-            ["0", "1", "2", "3", "4", " "],
-            ["5", "6", "7", "8", "9", " "]]
-        case .qwerty:
-            return [["All done", "Thanks", "Can you help me", "", ""],
-            ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
-            ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
-            ["A", "S", "D", "F", "G", "H", "J", "K", "L", "Some word"],
-            ["Z", "X", "C", "V", "B", "N", "M", "", "?", "I need the toilet"],
-            ["Finish", "Space", "Delete"]]
-        }
-    }
-}
-
-struct DeviceOrientationKey: EnvironmentKey {
-    static let defaultValue: UIDeviceOrientation = UIDevice.current.orientation
-}
-
-extension EnvironmentValues {
-    var deviceOrientation: UIDeviceOrientation {
-        get { self[DeviceOrientationKey.self] }
-        set { self[DeviceOrientationKey.self] = newValue }
-    }
-}
-
-// Onboarding View
-struct OnboardingView: View {
-    @Environment(\.deviceOrientation) var deviceOrientation
-    @AppStorage("hasLaunchedBefore") var hasLaunchedBefore: Bool = false
-
-    private var player: AVPlayer {
-        let videoName = deviceOrientation.isLandscape ? "LandscapeVideo" : "PortraitVideo"
-        if let url = Bundle.main.url(forResource: videoName, withExtension: "mp4") {
-            return AVPlayer(url: url)
-        } else {
-            fatalError("Video file not found \(videoName).mp4")
-        }
-    }
-
-
-    var body: some View {
-        VStack {
-            VideoPlayer(player: player)
-                .onAppear {
-                    player.play()
-                }
-                    Button("Continue") {
-                        hasLaunchedBefore = true
-                    }
-                }
-    }
-}
-
-
 struct SpellingBoardView: View {
+    @EnvironmentObject var settings: AppSettings
+    @State private var showingSettings = false
+    
     @State private var formedWord = ""
     @State private var completedDwellCell: (row: Int, column: Int)? = nil
     @State private var currentSentence = ""
@@ -121,18 +28,7 @@ struct SpellingBoardView: View {
     @State private var hoveredCell: (row: Int, column: Int)? = nil
     
     let speechSynthesizer = AVSpeechSynthesizer()
-    
-    @State var settingsOpen = false
-    @AppStorage("dragType") var dragType: DragType = .dwell
-    @AppStorage("dwellTime") var dwellTime: Double = 0.5
-    @AppStorage("showTrail") var showTrail: Bool = true
-    @AppStorage("Layout") var layout: Layout = .alphabetical
-    @AppStorage("autocorrectEnabled") var autocorrectEnabled: Bool = true
-    @AppStorage("hasLaunchedBefore") var hasLaunchedBefore: Bool = false
-    @AppStorage("writeWithoutSpacesEnabled") var writeWithoutSpacesEnabled: Bool = false
-    @AppStorage("enlargeKeys") var enlargeKeys: Bool = false
 
-    
     @State var currentlyDwellingCell: (row: Int, column: Int)?
     @State var dwellWorkItem: DispatchWorkItem?
     @State var dwellCellSelecteced = false
@@ -150,7 +46,7 @@ struct SpellingBoardView: View {
     }
     
     var body: some View {
-        if hasLaunchedBefore {
+        if settings.hasLaunchedBefore {
             VStack(spacing: 0) {
                 HStack {
                     // Sentence display row
@@ -179,140 +75,46 @@ struct SpellingBoardView: View {
                      }
                      */
                     Button(action: {
-                        settingsOpen = true
+                        showingSettings = true
                     }) {
                         Image(systemName: "gear")
                     }.padding(.trailing)
                 }
-                .sheet(isPresented: $settingsOpen, content: {
-                    NavigationStack {
-                        Form {
-                            Section(content: {
-                                VStack(alignment: .leading) {
-                                    Label("Drag Type", systemImage: "hand.draw")
-                                        .labelStyle(.titleOnly)
-                                    Picker("Drag Type", selection: $dragType) {
-                                        Text("Direction Change").tag(DragType.direction)
-                                        Text("Dwell").tag(DragType.dwell)
-                                    }
-                                    .pickerStyle(.segmented)
-                                }.frame(alignment: .leading)
-                            }, footer: {
-                                Text("Change how we calculate letter selection")
-                                
-                            })
-                            
-                            Section(content: {
-                                Picker("Layout", selection: $layout) {
-                                    Text("Alphabetical").tag(Layout.alphabetical)
-                                    Text("Frequency").tag(Layout.frequency)
-                                    Text("QWERTY").tag(Layout.qwerty)
-                                }
-                                
-                            }, footer: {
-                                Text("The layout of the letters on the grid")
-                            })
-                            
-                            Section(content: {
-                                VStack {
-                                    HStack {
-                                        Text("Dwell Time")
-                                        Spacer()
-                                        Text(String(format: "%.2f", dwellTime))
-                                    }
-                                    
-                                    Slider(
-                                        value: $dwellTime,
-                                        in: 0.1...10,
-                                        step: 0.1
-                                    ) {
-                                        Text("Dwell Time")
-                                    } minimumValueLabel: {
-                                        Text("0.1s")
-                                    } maximumValueLabel: {
-                                        Text("2s")
-                                    }
-                                }
-                            }, footer: {
-                                Text("The amount of time you must keep your finger on a letter to register a click. This only work in Dwell mode")
-                            })
-                            
-                            Section(content: {
-                                Toggle("Show Trail", isOn: $showTrail)
-                            }, footer: {
-                                Text("A trail is shown behind the users finger as they drag about")
-                            })
-                            
-                            Section(content: {
-                                Toggle("Enlarge Keys on Hover", isOn: $enlargeKeys)
-                            }, footer: {
-                                Text("As you move over keys they will enlarge to help you see them")
-                            })
-                            
-                            
-                            Section(content: {
-                                Toggle("Auto Correct words on Finish", isOn: $autocorrectEnabled)
-                            }, footer: {
-                                Text("Words are autocorrected on finishing a sentence")
-                            })
-                            
-                            Section(content: {
-                                Toggle("Write Without Spaces", isOn: $writeWithoutSpacesEnabled)
-                            }, footer: {
-                                Text("If you write without selecting space try using this feature. It requires you to be online and may not work!")
-                            })
-                            
-                            Section(content: {
-                                Button("Reset Onboarding") {
-                                                hasLaunchedBefore = false
-                                            }
-                            }, footer: {
-                                Text("If you want to watch the introduction video again turn this on")
-                            })
+                .sheet(isPresented: $showingSettings) {
+                            SettingsView(settingsOpen: $showingSettings) // Pass the binding here
+                                .environmentObject(settings)
                         }
-                        .navigationTitle("Settings")
-                        .toolbar {
-                            ToolbarItemGroup(placement:.primaryAction) {
-                                Button("Done") {
-                                    settingsOpen = false
-                                }
-                            }
-                        }
-                        
-                        
-                        
-                    }
-                })
-                if dragType == .dwell {
+                if settings.dragType == .dwell {
                     ProgressView(value: progressAmount, total: 100)
                         .onReceive(timer) { _ in
                             // Ensure dwellTime is within a reasonable range
-                            guard dwellTime > 0.05 else { return } // Example minimum dwell time
+                            guard settings.dwellTime > 0.05 else { return } // Example minimum dwell time
 
-                            if let dwellWorkItem = dwellWorkItem {
-                                let current = 100 / (dwellTime / 0.1)
+                            if dwellWorkItem != nil {
+                                let current = 100 / (settings.dwellTime / 0.1)
                                 progressAmount = min(100, progressAmount + current)
                             }
                         }
+
                 }
                 GeometryReader { geometry in
                     ZStack {
                         VStack(spacing: 0) {
-                            ForEach(0..<layout.rows.count, id: \.self) { rowIndex in
+                            ForEach(0..<settings.layout.rows.count, id: \.self) { rowIndex in
                                 HStack(spacing: 0) {
-                                    ForEach(layout.rows[rowIndex].indices, id: \.self) { columnIndex in
-                                        let letter = layout.rows[rowIndex][columnIndex]
+                                    ForEach(settings.layout.rows[rowIndex].indices, id: \.self) { columnIndex in
+                                        let letter = settings.layout.rows[rowIndex][columnIndex]
                                         Text(letter)
-                                            .scaleEffect((self.isHovered(row: rowIndex, column: columnIndex) && enlargeKeys) ? 3 : 1.0)
+                                            .scaleEffect((self.isHovered(row: rowIndex, column: columnIndex) && settings.enlargeKeys) ? 3 : 1.0)
                                             .frame(width: self.keyWidth(for: rowIndex, in: geometry.size),
-                                                   height: geometry.size.height / CGFloat(layout.rows.count))
+                                                   height: geometry.size.height / CGFloat(settings.layout.rows.count))
                                             .background(self.determineBackgroundColor(row: rowIndex, column: columnIndex))
                                             .border(Color(UIColor.separator))
                                     }
                                 }
                             }
                         }
-                        if showTrail {
+                        if settings.showTrail {
                             Path { path in
                                 let validDragPoints = dragPointsWithTimeStamps.filter { point in
                                     let now = Date().timeIntervalSince1970
@@ -334,14 +136,14 @@ struct SpellingBoardView: View {
                     .gesture(
                         DragGesture(minimumDistance: 0, coordinateSpace: .local)
                             .onChanged { value in
-                                if dragType == .direction {
+                                if settings.dragType == .direction {
                                     dragPoints.append(value.location)
                                     dragPointsWithTimeStamps.append(TimeStampedPoints(value.location))
                                     selectLetter(value.location, gridSize: geometry.size) // Call the function to select the letter
                                     processDragForLetterSelection(gridSize: geometry.size)
                                 }
                                 
-                                if dragType == .dwell {
+                                if settings.dragType == .dwell {
                                     dragPoints.append(value.location)
                                     dragPointsWithTimeStamps.append(TimeStampedPoints(value.location))
                                     
@@ -362,13 +164,13 @@ struct SpellingBoardView: View {
                                     }
                                 }
                                 
-                                if enlargeKeys {
+                                if settings.enlargeKeys {
                                                 let cell = determineCell(at: value.location, gridSize: geometry.size)
                                                 hoveredButton = cell // Update hovered button only if the setting is enabled
                                             }
                             }
                             .onEnded { _ in
-                                if dragType == .direction {
+                                if settings.dragType == .direction {
                                     self.speakMessage(self.formedWord)
                                     //self.currentSentence += formedWord + " "
                                     //self.formedWord = "" // Reset for next word
@@ -378,7 +180,7 @@ struct SpellingBoardView: View {
                                     self.lastDirection = nil // Reset the last direction on gesture end
                                 }
                                 
-                                if dragType == .dwell {
+                                if settings.dragType == .dwell {
                                     // Cancell dwell timer
                                     currentlyDwellingCell = nil
                                     cancelDwellTimer()
@@ -392,7 +194,7 @@ struct SpellingBoardView: View {
                                     
                                 }
                                 
-                                if enlargeKeys {
+                                if settings.enlargeKeys {
                                         hoveredButton = nil // Reset hovered button
                                     }
                             }
@@ -411,7 +213,7 @@ struct SpellingBoardView: View {
     }
 
     func keyWidth(for row: Int, in size: CGSize) -> CGFloat {
-        let numberOfKeysInRow = CGFloat(layout.rows[row].count)
+        let numberOfKeysInRow = CGFloat(settings.layout.rows[row].count)
         return size.width / numberOfKeysInRow
     }
     
@@ -425,7 +227,7 @@ struct SpellingBoardView: View {
         })
         
         dwellWorkItem = newWorkItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + dwellTime, execute: newWorkItem)
+        DispatchQueue.main.asyncAfter(deadline: .now() + settings.dwellTime, execute: newWorkItem)
     }
     
     func cancelDwellTimer() {
@@ -439,16 +241,16 @@ struct SpellingBoardView: View {
     
     func determineLetter(at point: CGPoint, gridSize: CGSize) -> String {
         // Calculate the dimensions of each cell
-        let cellWidth = gridSize.width / CGFloat(layout.rows[0].count)
-        let cellHeight = gridSize.height / CGFloat(layout.rows.count)
+        let cellWidth = gridSize.width / CGFloat(settings.layout.rows[0].count)
+        let cellHeight = gridSize.height / CGFloat(settings.layout.rows.count)
 
         // Calculate the row and column based on the touch point
         let column = Int(point.x / cellWidth)
         let row = Int(point.y / cellHeight)
 
         // Check if the calculated row and column are within the bounds of the grid
-        if row >= 0 && row < layout.rows.count && column >= 0 && column < layout.rows[row].count {
-            return layout.rows[row][column]
+        if row >= 0 && row < settings.layout.rows.count && column >= 0 && column < settings.layout.rows[row].count {
+            return settings.layout.rows[row][column]
         } else {
             // Return an empty string or some default value if the point is outside the grid
             return ""
@@ -479,10 +281,10 @@ struct SpellingBoardView: View {
 
     // Function to determine cell at a point
     func determineCell(at point: CGPoint, gridSize: CGSize) -> (row: Int, column: Int) {
-        let rowHeight = gridSize.height / CGFloat(layout.rows.count)
+        let rowHeight = gridSize.height / CGFloat(settings.layout.rows.count)
         let row = Int(point.y / rowHeight)
 
-        let numberOfColumnsInRow = CGFloat(layout.rows[row].count)
+        let numberOfColumnsInRow = CGFloat(settings.layout.rows[row].count)
         let columnWidth = gridSize.width / numberOfColumnsInRow
         let column = Int(point.x / columnWidth)
 
@@ -504,12 +306,12 @@ struct SpellingBoardView: View {
 
     // Function to select a cell
     func selectCell(_ cell: (row: Int, column: Int)) {
-        guard cell.row >= 0, cell.row < layout.rows.count,
-                  cell.column >= 0, cell.column < layout.rows[cell.row].count else {
+        guard cell.row >= 0, cell.row < settings.layout.rows.count,
+              cell.column >= 0, cell.column < settings.layout.rows[cell.row].count else {
                 print("Index out of range: row \(cell.row), column \(cell.column)")
                 return
             }
-        let letter = layout.rows[cell.row][cell.column]
+        let letter = settings.layout.rows[cell.row][cell.column]
         if letter == "Delete" {
             deleteLastCharacter()
         } else if letter == "Finish" {
@@ -517,7 +319,7 @@ struct SpellingBoardView: View {
             let fullSentence = currentSentence + formedWord
             formedWord = "" // Reset formedWord
 
-            if writeWithoutSpacesEnabled {
+            if settings.writeWithoutSpacesEnabled {
                 correctNoSpaceSentence(fullSentence) { correctedSentence in
                     DispatchQueue.main.async {
                         if let corrected = correctedSentence {
@@ -538,7 +340,7 @@ struct SpellingBoardView: View {
     }
 
     func postCorrectionProcessing() {
-        if autocorrectEnabled {
+        if settings.autocorrectEnabled {
             currentSentence = autocorrectSentence(currentSentence)
         }
         print("Processed sentence: \(currentSentence)")
@@ -615,7 +417,7 @@ struct SpellingBoardView: View {
 
 
     func determineBackgroundColor(row: Int, column: Int) -> Color {
-        let letter = layout.rows[row][column]
+        let letter = settings.layout.rows[row][column]
 
         // Check for specific function keys
         if letter == "Finish" {
@@ -714,6 +516,9 @@ struct SpellingBoardView: View {
 
 }
 
-#Preview {
-    SpellingBoardView()
+struct SpellingBoardView_Previews: PreviewProvider {
+    static var previews: some View {
+        SpellingBoardView()
+            .environmentObject(AppSettings()) // Provide AppSettings for previews
+    }
 }

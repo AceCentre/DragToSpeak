@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct DragToSpeakApp: App {
+    var settings = AppSettings()
     var body: some Scene {
         WindowGroup {
             SpellingBoardView()
+                .environmentObject(settings)
         }
     }
 }
