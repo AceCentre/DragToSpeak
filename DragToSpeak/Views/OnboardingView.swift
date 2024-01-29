@@ -9,11 +9,10 @@ import AVFoundation
 import AVKit
 
 struct OnboardingView: View {
-    @Environment(\.deviceOrientation) var deviceOrientation
     @EnvironmentObject var settings: AppSettings
     
     private var player: AVPlayer {
-        let videoName = deviceOrientation.isLandscape ? "LandscapeVideo" : "PortraitVideo"
+        let videoName = UIDevice.current.orientation.isLandscape ? "LandscapeVideo" : "PortraitVideo"
         if let url = Bundle.main.url(forResource: videoName, withExtension: "mp4") {
             return AVPlayer(url: url)
         } else {
