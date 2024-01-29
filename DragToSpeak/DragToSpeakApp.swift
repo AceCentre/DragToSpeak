@@ -9,7 +9,8 @@ import SwiftUI
 
 @main
 struct DragToSpeakApp: App {
-    var settings = AppSettings()
+    @StateObject var settings = AppSettings()
+    
     var body: some Scene {
         WindowGroup {
             SpellingBoardView()
