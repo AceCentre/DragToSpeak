@@ -17,10 +17,10 @@ struct SettingsView: View {
                 dragTypeSection
                 layoutSection
                 dwellTimeSection
-                toggleSection(title: "Show Trail", binding: $settings.showTrail)
-                toggleSection(title: "Enlarge Keys on Hover", binding: $settings.enlargeKeys)
-                toggleSection(title: "Auto Correct words on Finish", binding: $settings.autocorrectEnabled)
-                toggleSection(title: "Write Without Spaces", binding: $settings.writeWithoutSpacesEnabled)
+                ToggleSection(title: "Show Trail", isOn: $settings.showTrail)
+                ToggleSection(title: "Enlarge Keys on Hover", isOn: $settings.enlargeKeys)
+                ToggleSection(title: "Auto Correct words on Finish", isOn: $settings.autocorrectEnabled)
+                ToggleSection(title: "Write Without Spaces", isOn: $settings.writeWithoutSpacesEnabled)
                 resetOnboardingSection
             }
             .navigationTitle("Settings")
@@ -95,9 +95,13 @@ struct SettingsView: View {
     }
 }
 
-// Reusable toggle section
-private func toggleSection(title: String, binding: Binding<Bool>) -> some View {
-    Section {
-        Toggle(title, isOn: binding)
+struct ToggleSection: View {
+    var title: String
+    @Binding var isOn: Bool
+    
+    var body: some View {
+        Section {
+            Toggle(title, isOn: $isOn)
+        }
     }
 }
