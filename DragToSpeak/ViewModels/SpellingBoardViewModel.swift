@@ -57,7 +57,7 @@ class AppSettings: ObservableObject {
     @Published var dwellTime: Double = 0.5
     @Published var showTrail: Bool = true
     @Published var autocorrectEnabled: Bool = true
-    @Published var hasLaunchedBefore: Bool = false
+    @AppStorage("hasLaunchedBefore") var hasLaunchedBefore: Bool = false
     @Published var enlargeKeys: Bool = false
     @Published var dragType: DragType = .dwell
     @State var settingsOpen = false
