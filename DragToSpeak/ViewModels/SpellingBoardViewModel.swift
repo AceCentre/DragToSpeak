@@ -60,8 +60,5 @@ class AppSettings: ObservableObject {
     @AppStorage("showTrail") var showTrail: Bool = true
     @AppStorage("autocorrectEnabled") var autocorrectEnabled: Bool = true
     @AppStorage("enlargeKeys") var enlargeKeys: Bool = false
-    @AppStorage("enlargeKeys") var dragType: DragType = .dwell
-    
-    // Don't persis
-    @Published var settingsOpen = false
+    @AppStorage("dragType") var dragType: DragType = .dwell
 }
