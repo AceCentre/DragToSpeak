@@ -13,8 +13,6 @@
 		3F1CAB242B0CB33600D49ADE /* DragToSpeakTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F1CAB232B0CB33600D49ADE /* DragToSpeakTests.swift */; };
 		3F1CAB2E2B0CB33600D49ADE /* DragToSpeakUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F1CAB2D2B0CB33600D49ADE /* DragToSpeakUITests.swift */; };
 		3F1CAB302B0CB33600D49ADE /* DragToSpeakUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F1CAB2F2B0CB33600D49ADE /* DragToSpeakUITestsLaunchTests.swift */; };
-		3F44A3042B63963B00C8D6EE /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F44A3032B63963B00C8D6EE /* UserSettings.swift */; };
-		3F44A3062B63964900C8D6EE /* KeyboardLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F44A3052B63964900C8D6EE /* KeyboardLayout.swift */; };
 		3F44A3082B63965D00C8D6EE /* SpellingBoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F44A3072B63965D00C8D6EE /* SpellingBoardView.swift */; };
 		3F44A30A2B63966E00C8D6EE /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F44A3092B63966E00C8D6EE /* OnboardingView.swift */; };
 		3F44A30C2B63968D00C8D6EE /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F44A30B2B63968D00C8D6EE /* SettingsView.swift */; };
@@ -53,8 +51,6 @@
 		3F1CAB292B0CB33600D49ADE /* DragToSpeakUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DragToSpeakUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3F1CAB2D2B0CB33600D49ADE /* DragToSpeakUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragToSpeakUITests.swift; sourceTree = "<group>"; };
 		3F1CAB2F2B0CB33600D49ADE /* DragToSpeakUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragToSpeakUITestsLaunchTests.swift; sourceTree = "<group>"; };
-		3F44A3032B63963B00C8D6EE /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
-		3F44A3052B63964900C8D6EE /* KeyboardLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardLayout.swift; sourceTree = "<group>"; };
 		3F44A3072B63965D00C8D6EE /* SpellingBoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpellingBoardView.swift; sourceTree = "<group>"; };
 		3F44A3092B63966E00C8D6EE /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		3F44A30B2B63968D00C8D6EE /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -157,8 +153,6 @@
 		3F44A2FF2B6395E900C8D6EE /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				3F44A3032B63963B00C8D6EE /* UserSettings.swift */,
-				3F44A3052B63964900C8D6EE /* KeyboardLayout.swift */,
 				3F44A30F2B641C1A00C8D6EE /* TimeStampedPoints.swift */,
 				3F44A3112B641C3D00C8D6EE /* CorrectionResponse.swift */,
 			);
@@ -326,9 +320,7 @@
 				3F44A3122B641C3E00C8D6EE /* CorrectionResponse.swift in Sources */,
 				3F44A30C2B63968D00C8D6EE /* SettingsView.swift in Sources */,
 				3F44A30E2B6396A700C8D6EE /* SpellingBoardViewModel.swift in Sources */,
-				3F44A3042B63963B00C8D6EE /* UserSettings.swift in Sources */,
 				3F44A3102B641C1A00C8D6EE /* TimeStampedPoints.swift in Sources */,
-				3F44A3062B63964900C8D6EE /* KeyboardLayout.swift in Sources */,
 				3F44A30A2B63966E00C8D6EE /* OnboardingView.swift in Sources */,
 				3F44A3142B641C6300C8D6EE /* EnvironmentExtensions.swift in Sources */,
 				3F44A3082B63965D00C8D6EE /* SpellingBoardView.swift in Sources */,
