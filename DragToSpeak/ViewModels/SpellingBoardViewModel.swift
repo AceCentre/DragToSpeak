@@ -52,13 +52,16 @@ enum Layout: Int {
 
 
 class AppSettings: ObservableObject {
-    @Published var layout: Layout = .alphabetical
-    @Published var writeWithoutSpacesEnabled: Bool = false
-    @Published var dwellTime: Double = 0.5
-    @Published var showTrail: Bool = true
-    @Published var autocorrectEnabled: Bool = true
+    // Persist
     @AppStorage("hasLaunchedBefore") var hasLaunchedBefore: Bool = false
-    @Published var enlargeKeys: Bool = false
-    @Published var dragType: DragType = .dwell
-    @State var settingsOpen = false
+    @AppStorage("layout") var layout: Layout = .alphabetical
+    @AppStorage("writeWithoutSpacesEnabled") var writeWithoutSpacesEnabled: Bool = false
+    @AppStorage("dwellTime") var dwellTime: Double = 0.5
+    @AppStorage("showTrail") var showTrail: Bool = true
+    @AppStorage("autocorrectEnabled") var autocorrectEnabled: Bool = true
+    @AppStorage("enlargeKeys") var enlargeKeys: Bool = false
+    @AppStorage("enlargeKeys") var dragType: DragType = .dwell
+    
+    // Don't persis
+    @Published var settingsOpen = false
 }
