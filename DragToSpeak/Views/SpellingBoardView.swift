@@ -39,9 +39,10 @@ struct SpellingBoardView: View {
     init() {
         // This makes it work in silent mode by setting the audio to playback
         do {
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-        } catch let error {
-            print("This error message from SpeechSynthesizer \(error.localizedDescription)")
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: .duckOthers)
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("Failed to set audio session category. Error: \(error)")
         }
     }
     
