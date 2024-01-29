@@ -7,7 +7,7 @@
 
 struct CorrectionResponse: Decodable {
     let correctedSentence: String
-
+    
     enum CodingKeys: String, CodingKey {
         case correctedSentence = "corrected_sentence"
     }

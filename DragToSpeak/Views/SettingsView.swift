@@ -10,7 +10,7 @@ import SwiftUI
 struct SettingsView: View {
     @Binding var settingsOpen: Bool
     @EnvironmentObject var settings: AppSettings
-
+    
     var body: some View {
         NavigationStack {
             Form {
@@ -27,7 +27,7 @@ struct SettingsView: View {
             .toolbar { doneButton }
         }
     }
-
+    
     private var dragTypeSection: some View {
         Section {
             Picker("Drag Type", selection: $settings.dragType) {
@@ -43,49 +43,49 @@ struct SettingsView: View {
     private var layoutSection: some View {
         Section {
             Picker("Layout", selection: $settings.layout) {
-                                   Text("Alphabetical").tag(Layout.alphabetical)
-                                   Text("Frequency").tag(Layout.frequency)
-                                   Text("QWERTY").tag(Layout.qwerty)
-                               }
+                Text("Alphabetical").tag(Layout.alphabetical)
+                Text("Frequency").tag(Layout.frequency)
+                Text("QWERTY").tag(Layout.qwerty)
+            }
         } footer: {
             Text("The layout of the letters on the grid")
         }
     }
-
+    
     private var dwellTimeSection: some View {
         Section(content: {
             VStack {
-                                HStack {
-                                    Text("Dwell Time")
-                                    Spacer()
-                                    Text(String(format: "%.2f", settings.dwellTime))
-                                }
-                                
-                                Slider(
-                                    value: $settings.dwellTime,
-                                    in: 0.1...10,
-                                    step: 0.1
-                                ) {
-                                    Text("Dwell Time")
-                                } minimumValueLabel: {
-                                    Text("0.1s")
-                                } maximumValueLabel: {
-                                    Text("2s")
-                                }
-                            }
-                        }, footer: {
-                            Text("The amount of time you must keep your finger on a letter to register a click. This only work in Dwell mode")
-                        })
+                HStack {
+                    Text("Dwell Time")
+                    Spacer()
+                    Text(String(format: "%.2f", settings.dwellTime))
+                }
+                
+                Slider(
+                    value: $settings.dwellTime,
+                    in: 0.1...10,
+                    step: 0.1
+                ) {
+                    Text("Dwell Time")
+                } minimumValueLabel: {
+                    Text("0.1s")
+                } maximumValueLabel: {
+                    Text("2s")
+                }
+            }
+        }, footer: {
+            Text("The amount of time you must keep your finger on a letter to register a click. This only work in Dwell mode")
+        })
     }
-
+    
     private var resetOnboardingSection: some View {
         Section(content: {
-                            Button("Reset Onboarding") {
-                                settings.hasLaunchedBefore = false
-                                        }
-                        }, footer: {
-                            Text("If you want to watch the introduction video again turn this on")
-                        })
+            Button("Reset Onboarding") {
+                settings.hasLaunchedBefore = false
+            }
+        }, footer: {
+            Text("If you want to watch the introduction video again turn this on")
+        })
     }
     
     private var doneButton: some ToolbarContent {

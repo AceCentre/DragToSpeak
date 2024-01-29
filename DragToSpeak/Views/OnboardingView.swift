@@ -20,17 +20,17 @@ struct OnboardingView: View {
             fatalError("Video file not found \(videoName).mp4")
         }
     }
-
-
+    
+    
     var body: some View {
         VStack {
             VideoPlayer(player: player)
                 .onAppear {
                     player.play()
                 }
-                    Button("Continue") {
-                        settings.hasLaunchedBefore = true
-                    }
-                }
+            Button("Continue") {
+                settings.hasLaunchedBefore = true
+            }
+        }
     }
 }
