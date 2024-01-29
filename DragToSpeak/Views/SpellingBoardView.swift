@@ -83,7 +83,6 @@ struct SpellingBoardView: View {
                 }
                 .sheet(isPresented: $showingSettings) {
                             SettingsView(settingsOpen: $showingSettings) // Pass the binding here
-                                .environmentObject(settings)
                         }
                 if settings.dragType == .dwell {
                     ProgressView(value: progressAmount, total: 100)
