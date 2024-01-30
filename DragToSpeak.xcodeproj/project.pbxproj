@@ -174,7 +174,6 @@
 			path = ViewModels;
 			sourceTree = "<group>";
 		};
-		3F44A3022B63961B00C8D6EE /* Utilities */ = {
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
