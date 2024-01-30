@@ -114,7 +114,6 @@
 				3F71AF522B5EC68D00BCA7EF /* LandscapeVideo.mp4 */,
 				3F71AF532B5EC84700BCA7EF /* PortraitVideo.mp4 */,
 				D56688D52B5030A00059046C /* Info.plist */,
-				3F44A3022B63961B00C8D6EE /* Utilities */,
 				3F44A3012B63960C00C8D6EE /* ViewModels */,
 				3F1CAB122B0CB33000D49ADE /* DragToSpeakApp.swift */,
 				3F1CAB162B0CB33500D49ADE /* Assets.xcassets */,
@@ -176,12 +175,6 @@
 			sourceTree = "<group>";
 		};
 		3F44A3022B63961B00C8D6EE /* Utilities */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Utilities;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */

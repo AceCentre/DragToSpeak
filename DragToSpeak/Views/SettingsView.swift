@@ -44,6 +44,7 @@ struct SettingsView: View {
         Section {
             Picker("Layout", selection: $settings.layout) {
                 Text("Alphabetical").tag(Layout.alphabetical)
+                Text("Alphabetical - No Numbers").tag(Layout.alphabeticalNoNumbers)
                 Text("Frequency").tag(Layout.frequency)
                 Text("QWERTY").tag(Layout.qwerty)
             }

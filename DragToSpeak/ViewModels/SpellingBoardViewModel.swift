@@ -14,6 +14,7 @@ enum DragType: Int {
 
 enum Layout: Int {
     case alphabetical
+    case alphabeticalNoNumbers
     case frequency
     case qwerty
     
@@ -29,6 +30,14 @@ enum Layout: Int {
                     ["Thank you", "OK", "The", "Please", "Finish"],
                     ["0", "1", "2", "3", "4"],
                     ["5", "6", "7", "8", "9"]]
+        case .alphabeticalNoNumbers:
+            return [["A", "B", "C", "D", "E"],
+                    ["F", "G", "H", "I", "J"],
+                    ["K", "L", "M", "N", "O"],
+                    ["P", "Q", "R", "S", "T"],
+                    ["U", "V", "W", "X", "Y"],
+                    ["Z", "Space", "YES", "NO", "Delete"],
+                    ["Thank you", "OK", "The", "Please", "Finish"]]
         case .frequency:
             return  [[" Z", "V", "C", "H", "W", "K"],
                      ["F", "I", "T", "A", "L", "Y"],
