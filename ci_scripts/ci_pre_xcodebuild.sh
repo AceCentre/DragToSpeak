@@ -15,9 +15,10 @@ echo "Stage: PRE-Xcode Build is activated .... "
 pwd
 
 # Write a JSON File containing all the environment variables and secrets.
+touch ./DragToSpeak/secrets.json
 printf "{\"AZURE_USER_PASS\":\"%s\"}" "$AZURE_USER_PASS" >> ./DragToSpeak/secrets.json
 
-echo "Wrote Secrets.json file."
+echo "Wrote secrets.json file."
 
 echo "Stage: PRE-Xcode Build is DONE .... "
 
