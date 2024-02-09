@@ -130,6 +130,7 @@
 		3F1CAB062B0CB32F00D49ADE = {
 			isa = PBXGroup;
 			children = (
+				D52506812B765E9A00F4E8F6 /* ci_scripts */,
 				3F1CAB112B0CB33000D49ADE /* DragToSpeak */,
 				3F1CAB222B0CB33600D49ADE /* DragToSpeakTests */,
 				3F1CAB2C2B0CB33600D49ADE /* DragToSpeakUITests */,
@@ -151,7 +152,6 @@
 			isa = PBXGroup;
 			children = (
 				3F1CAB122B0CB33000D49ADE /* DragToSpeakApp.swift */,
-				D52506812B765E9A00F4E8F6 /* ci_scripts */,
 				D525067E2B74FBDD00F4E8F6 /* Observable */,
 				D525067D2B74FBCC00F4E8F6 /* Model */,
 				D525067C2B74FBA100F4E8F6 /* Components */,
