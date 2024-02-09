@@ -13,8 +13,13 @@ struct DragToSpeakApp: App {
     
     var body: some Scene {
         WindowGroup {
-            SpellingBoardView()
-                .environmentObject(settings)
+            if settings.hasLaunchedBefore {
+                SpellingBoardPage()
+                    .environmentObject(settings)
+            } else {
+                OnboardingPage(hasLaunchedBefore: $settings.hasLaunchedBefore)
+            }
+            
         }
     }
 }
