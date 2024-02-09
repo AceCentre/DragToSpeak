@@ -22,17 +22,19 @@ struct SpellingBoard: View {
                         
             ZStack {
                 VStack(spacing: 0) {
-                    ForEach(gridController.grid, id: \.self) { row in
+                    ForEach(0..<gridController.grid.count, id: \.self) { rowIndex in
+                        let row = gridController.grid[rowIndex]
                         HStack(spacing: 0) {
                             ForEach(row, id: \.self) { cell in
                                 let cellWidth = reader.size.width / CGFloat(row.count)
+                                let isLastRow = rowIndex == gridController.grid.count - 1
                                 CellView(
                                     text: cell.displayText,
                                     isActive: gridController.activeCell == cell,
                                     isPending: gridController.pendingCell == cell,
                                     cellType: cell.type,
                                     cellWidth: cellWidth,
-                                    cellHeight: cellHeight
+                                    cellHeight: isLastRow ? cellHeight - 1 : cellHeight
                                 )
                                 
                             }
