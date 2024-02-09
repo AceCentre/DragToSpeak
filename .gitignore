@@ -25,6 +25,8 @@ DerivedData/
 *.perspectivev3
 !default.perspectivev3
 
+secrets.json
+
 ## Obj-C/Swift specific
 *.hmap
 
