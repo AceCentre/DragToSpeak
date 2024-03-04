@@ -21,12 +21,14 @@ struct Cell: Equatable, Hashable {
     var displayText: String
     var speakText: String
     var messageText: String
+    var widthModifier: Double
     
     init(isDelete: Bool) {
         type = .delete
         displayText = "Delete"
         messageText = " "
         speakText = ""
+        widthModifier = 1
     }
     
     init(isBlank: Bool) {
@@ -34,6 +36,7 @@ struct Cell: Equatable, Hashable {
         displayText = ""
         messageText = UUID().uuidString
         speakText = ""
+        widthModifier = 1
     }
     
     init(isSpace: Bool) {
@@ -41,6 +44,15 @@ struct Cell: Equatable, Hashable {
         displayText = "Space"
         messageText = " "
         speakText = ""
+        widthModifier = 1
+    }
+    
+    init(isSpace: Bool, widthModifier: Double) {
+        type = .space
+        displayText = "Space"
+        messageText = " "
+        speakText = ""
+        self.widthModifier = widthModifier
     }
     
     init(isFinish: Bool) {
@@ -48,6 +60,7 @@ struct Cell: Equatable, Hashable {
         displayText = "Finish"
         messageText = ""
         speakText = ""
+        widthModifier = 1
     }
     
     init(letter: String) {
@@ -55,6 +68,7 @@ struct Cell: Equatable, Hashable {
         speakText = letter.lowercased()
         messageText = letter.lowercased()
         type = .letter
+        widthModifier = 1
     }
     
     init(word: String) {
@@ -62,5 +76,6 @@ struct Cell: Equatable, Hashable {
         speakText = word
         messageText = word
         type = .word
+        widthModifier = 1
     }
 }

@@ -86,12 +86,20 @@ class GridController: ObservableObject {
             return nil
         }
         
-        let columnWidth = unwrappedSize.width / CGFloat(targetRow.count)
+        let totalRowWidth: Double = targetRow.reduce(0, { current, currentCell in
+            return current + currentCell.widthModifier
+        })
         
-        let columnIndex = Int(point.x / columnWidth)
-        
-        let cell = targetRow[safe: columnIndex]
+        var currentX = 0.0
+        for currentCell in targetRow {
+            let cellWidth = (unwrappedSize.width / totalRowWidth) * currentCell.widthModifier
+            currentX += cellWidth
             
-        return cell
+            if point.x < currentX {
+                return currentCell
+            }
+        }
+            
+        return nil
     }
 }

@@ -17,23 +17,23 @@ enum Layout: Int {
         switch self {
             
        case .alphabetical:
-           return [[Cell(letter:"A"), Cell(letter: "B"), Cell(letter: "C"), Cell(letter: "D"), Cell(letter: "E")],
-                   [Cell(letter:"F"), Cell(letter: "G"), Cell(letter: "H"), Cell(letter: "I"), Cell(letter: "J")],
-                   [Cell(letter:"K"), Cell(letter: "L"), Cell(letter: "M"), Cell(letter: "N"), Cell(letter: "O")],
-                   [Cell(letter:"P"), Cell(letter: "Q"), Cell(letter: "R"), Cell(letter: "S"), Cell(letter: "T")],
-                   [Cell(letter:"U"), Cell(letter: "V"), Cell(letter: "W"), Cell(letter: "X"), Cell(letter: "Y")],
-                   [Cell(letter:"Z"), Cell(isSpace: true), Cell(word: "YES"), Cell(word: "NO"), Cell(isDelete: true)],
-                   [Cell(word:"Thank you"), Cell(word: "OK"), Cell(word: "The"), Cell(word: "Please"), Cell(isFinish: true)],
-                   [Cell(letter:"0"), Cell(letter: "1"), Cell(letter: "2"), Cell(letter: "3"), Cell(letter: "4")],
-                   [Cell(letter:"5"), Cell(letter: "6"), Cell(letter: "7"), Cell(letter: "8"), Cell(letter: "9")]]
+            return [[Cell(letter:"A"), Cell(letter: "B"), Cell(letter: "C"), Cell(letter: "D"), Cell(letter: "E"), Cell(isSpace: true, widthModifier: 0.5)],
+                    [Cell(letter:"F"), Cell(letter: "G"), Cell(letter: "H"), Cell(letter: "I"), Cell(letter: "J"), Cell(isSpace: true, widthModifier: 0.5)],
+                    [Cell(letter:"K"), Cell(letter: "L"), Cell(letter: "M"), Cell(letter: "N"), Cell(letter: "O"), Cell(isSpace: true, widthModifier: 0.5)],
+                    [Cell(letter:"P"), Cell(letter: "Q"), Cell(letter: "R"), Cell(letter: "S"), Cell(letter: "T"), Cell(isSpace: true, widthModifier: 0.5)],
+                   [Cell(letter:"U"), Cell(letter: "V"), Cell(letter: "W"), Cell(letter: "X"), Cell(letter: "Y"), Cell(isSpace: true, widthModifier: 0.5)],
+                   [Cell(letter:"Z"), Cell(isSpace: true), Cell(word: "YES"), Cell(word: "NO"), Cell(isDelete: true), Cell(isSpace: true, widthModifier: 0.5)],
+                   [Cell(word:"Thank you"), Cell(word: "OK"), Cell(word: "The"), Cell(word: "Please"), Cell(isFinish: true), Cell(isSpace: true, widthModifier: 0.5)],
+                   [Cell(letter:"0"), Cell(letter: "1"), Cell(letter: "2"), Cell(letter: "3"), Cell(letter: "4"), Cell(isSpace: true, widthModifier: 0.5)],
+                   [Cell(letter:"5"), Cell(letter: "6"), Cell(letter: "7"), Cell(letter: "8"), Cell(letter: "9"), Cell(isSpace: true, widthModifier: 0.5)]]
        case .alphabeticalNoNumbers:
-           return [[Cell(letter:"A"), Cell(letter: "B"), Cell(letter: "C"), Cell(letter: "D"), Cell(letter: "E")],
-                   [Cell(letter:"F"), Cell(letter: "G"), Cell(letter: "H"), Cell(letter: "I"), Cell(letter: "J")],
-                   [Cell(letter:"K"), Cell(letter: "L"), Cell(letter: "M"), Cell(letter: "N"), Cell(letter: "O")],
-                   [Cell(letter:"P"), Cell(letter: "Q"), Cell(letter: "R"), Cell(letter: "S"), Cell(letter: "T")],
-                   [Cell(letter:"U"), Cell(letter: "V"), Cell(letter: "W"), Cell(letter: "X"), Cell(letter: "Y")],
-                   [Cell(letter:"Z"), Cell(isSpace: true), Cell(word: "YES"), Cell(word: "NO"), Cell(isDelete: true)],
-                   [Cell(word:"Thank you"), Cell(word: "OK"), Cell(word: "The"), Cell(word: "Please"), Cell(isFinish: true)]]
+           return [[Cell(letter:"A"), Cell(letter: "B"), Cell(letter: "C"), Cell(letter: "D"), Cell(letter: "E"), Cell(isSpace: true, widthModifier: 0.5)],
+                   [Cell(letter:"F"), Cell(letter: "G"), Cell(letter: "H"), Cell(letter: "I"), Cell(letter: "J"), Cell(isSpace: true, widthModifier: 0.5)],
+                   [Cell(letter:"K"), Cell(letter: "L"), Cell(letter: "M"), Cell(letter: "N"), Cell(letter: "O"), Cell(isSpace: true, widthModifier: 0.5)],
+                   [Cell(letter:"P"), Cell(letter: "Q"), Cell(letter: "R"), Cell(letter: "S"), Cell(letter: "T"), Cell(isSpace: true, widthModifier: 0.5)],
+                   [Cell(letter:"U"), Cell(letter: "V"), Cell(letter: "W"), Cell(letter: "X"), Cell(letter: "Y"), Cell(isSpace: true, widthModifier: 0.5)],
+                   [Cell(letter:"Z"), Cell(isSpace: true), Cell(word: "YES"), Cell(word: "NO"), Cell(isDelete: true), Cell(isSpace: true, widthModifier: 0.5)],
+                   [Cell(word:"Thank you"), Cell(word: "OK"), Cell(word: "The"), Cell(word: "Please"), Cell(isFinish: true), Cell(isSpace: true, widthModifier: 0.5)]]
        case .frequency:
            return  [[Cell(letter:" Z"), Cell(letter: "V"), Cell(letter: "C"), Cell(letter: "H"), Cell(letter: "W"), Cell(letter: "K")],
                     [Cell(letter:"F"), Cell(letter: "I"), Cell(letter: "T"), Cell(letter: "A"), Cell(letter: "L"), Cell(letter: "Y")],

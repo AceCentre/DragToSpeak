@@ -26,7 +26,11 @@ struct SpellingBoard: View {
                         let row = gridController.grid[rowIndex]
                         HStack(spacing: 0) {
                             ForEach(row, id: \.self) { cell in
-                                let cellWidth = reader.size.width / CGFloat(row.count)
+                                let totalRowWidth: Double = row.reduce(0, { current, currentCell in
+                                    return current + currentCell.widthModifier
+                                })
+                                let cellWidth = (reader.size.width / totalRowWidth) * cell.widthModifier
+                                
                                 let isLastRow = rowIndex == gridController.grid.count - 1
                                 CellView(
                                     text: cell.displayText,
