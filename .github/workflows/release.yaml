@@ -1,0 +1,27 @@
+name: "Release: Manage Versions"
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  HandleVersionChange:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Run script
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const script = require('./version-handling')
+            script({ github, context, core })
+
+      - name: Commit changes
+        id: commit_changes
+        uses: EndBug/add-and-commit@v9.1.1
+        with:
+          add: "./Echo.xcodeproj/project.pbxproj"
+          message: "[AUTO RELEASE]"
