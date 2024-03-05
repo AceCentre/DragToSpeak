@@ -73,6 +73,15 @@ struct SettingsPage: View {
                 Text("Frequency").tag(Layout.frequency)
                 Text("QWERTY").tag(Layout.qwerty)
             }
+            VStack(alignment: .leading) {
+                Text("Insert column of spaces to side")
+                Picker("Spaces Column", selection: $settings.spacesColumn) {
+                    Text("Left").tag(SpacesColumn.left)
+                    Text("None").tag(SpacesColumn.none)
+                    Text("Right").tag(SpacesColumn.right)
+                }
+                .pickerStyle(.segmented)
+            }
         } footer: {
             Text("The layout of the letters on the grid")
         }

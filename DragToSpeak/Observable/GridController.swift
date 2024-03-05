@@ -15,9 +15,29 @@ class GridController: ObservableObject {
     
     var voiceEngine: VoiceEngine?
     var messageController: MessageController?
+    var appSettings: AppSettings?
     
     func setLayout(_ layout: Layout) {
-        grid = layout.grid
+        let spacesColumn = appSettings?.spacesColumn ?? .none
+        
+        var newGrid: [[Cell]] = []
+        
+        for row in layout.grid {
+            let spaceCell = Cell(isSpace: true, widthModifier: 0.5)
+            
+            if spacesColumn == .left {
+                newGrid.append([spaceCell] + row)
+            } else if spacesColumn == .right {
+                newGrid.append(row + [spaceCell])
+            } else {
+                newGrid.append(row)
+            }
+            
+        }
+        
+        grid = newGrid
+        
+        
     }
     
     func resetCells() {
@@ -68,6 +88,10 @@ class GridController: ObservableObject {
     
     func loadVoiceEngine(_ voiceEngine: VoiceEngine) {
         self.voiceEngine = voiceEngine
+    }
+    
+    func loadAppSettings(_ appSettings: AppSettings) {
+        self.appSettings = appSettings
     }
     
     func updateSize(_ size: CGSize) {

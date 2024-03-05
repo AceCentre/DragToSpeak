@@ -20,4 +20,5 @@ class AppSettings: ObservableObject {
     @AppStorage("dragType") var dragType: DragType = .dwell
     @AppStorage("fontSize") var fontSize: Int = 10
     @AppStorage("finishOnDragEnd") var finishOnDragEnd: Bool = false
+    @AppStorage("spacesColumn") var spacesColumn: SpacesColumn = .none
 }

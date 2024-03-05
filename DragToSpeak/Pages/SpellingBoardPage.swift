@@ -34,6 +34,7 @@ struct SpellingBoardPage: View {
             directionController.loadGridController(gridController)
             directionController.loadMessageController(messageController )
             
+            gridController.loadAppSettings(settings)
             gridController.setLayout(settings.layout)
             gridController.loadMessageController(messageController)
             gridController.loadVoiceEngine(voiceEngine)
@@ -42,6 +43,9 @@ struct SpellingBoardPage: View {
             messageController.loadAppSettings(settings)
         }
         .onChange(of: settings.layout) {
+            gridController.setLayout(settings.layout)
+        }
+        .onChange(of: settings.spacesColumn) {
             gridController.setLayout(settings.layout)
         }
         .environmentObject(dwellController)
