@@ -23,5 +23,5 @@ jobs:
         id: commit_changes
         uses: EndBug/add-and-commit@v9.1.1
         with:
-          add: "./Echo.xcodeproj/project.pbxproj"
+          add: "./DragToSpeak.xcodeproj/project.pbxproj"
           message: "[AUTO RELEASE]"
