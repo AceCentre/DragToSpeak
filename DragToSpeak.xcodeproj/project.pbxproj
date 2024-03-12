@@ -41,6 +41,7 @@
 		D5D0DDB42B73C53700F15C5C /* TrailController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5D0DDB32B73C53700F15C5C /* TrailController.swift */; };
 		D5D5D68D2B71060B00E48FE4 /* LandscapeVideo.gif in Resources */ = {isa = PBXBuildFile; fileRef = D5D5D68B2B71060B00E48FE4 /* LandscapeVideo.gif */; };
 		D5D5D68E2B71060B00E48FE4 /* PortraitVideo.gif in Resources */ = {isa = PBXBuildFile; fileRef = D5D5D68C2B71060B00E48FE4 /* PortraitVideo.gif */; };
+		D5E6A0CA2BA09B9900A1B599 /* LogText.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5E6A0C92BA09B9900A1B599 /* LogText.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -100,6 +101,7 @@
 		D5D0DDB32B73C53700F15C5C /* TrailController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrailController.swift; sourceTree = "<group>"; };
 		D5D5D68B2B71060B00E48FE4 /* LandscapeVideo.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = LandscapeVideo.gif; sourceTree = "<group>"; };
 		D5D5D68C2B71060B00E48FE4 /* PortraitVideo.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = PortraitVideo.gif; sourceTree = "<group>"; };
+		D5E6A0C92BA09B9900A1B599 /* LogText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogText.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -233,6 +235,7 @@
 			isa = PBXGroup;
 			children = (
 				D5D0DDA42B73C3EE00F15C5C /* AppSettings.swift */,
+				D5E6A0C92BA09B9900A1B599 /* LogText.swift */,
 				D5D0DDB32B73C53700F15C5C /* TrailController.swift */,
 				D52506732B74FB4B00F4E8F6 /* DwellController.swift */,
 				D525067F2B751E8700F4E8F6 /* DirectionController.swift */,
@@ -417,6 +420,7 @@
 				D52506722B74FB3900F4E8F6 /* CellView.swift in Sources */,
 				D52506802B751E8700F4E8F6 /* DirectionController.swift in Sources */,
 				D5D0DDB02B73C4EE00F15C5C /* Array.swift in Sources */,
+				D5E6A0CA2BA09B9900A1B599 /* LogText.swift in Sources */,
 				3F44A3082B63965D00C8D6EE /* SpellingBoardPage.swift in Sources */,
 				3F1CAB132B0CB33000D49ADE /* DragToSpeakApp.swift in Sources */,
 			);

@@ -12,8 +12,8 @@ class MessageController: ObservableObject {
     @Published var currentMessage = ""
     
     var appSettings: AppSettings?
-    
     var voiceEngine: VoiceEngine?
+    var logger: LogHistory?
     
     func clearMessage() {
         currentMessage = ""
@@ -23,20 +23,29 @@ class MessageController: ObservableObject {
         self.voiceEngine = voiceEngine
     }
     
+    func loadLogger(_ logger: LogHistory) {
+        self.logger = logger
+    }
+    
     func finish() {
         if
             let unwrappedVoiceMessage = voiceEngine,
-            let unwrappedAppSettings = appSettings
+            let unwrappedAppSettings = appSettings,
+            let unwrappedLogger = logger
         {
             
             if unwrappedAppSettings.writeWithoutSpacesEnabled {
                 addSpaces(currentMessage) { newMessage in
                     DispatchQueue.main.async {
+                        unwrappedLogger.newEntry(input: self.currentMessage, corrected: newMessage)
+
                         self.currentMessage = newMessage
                         unwrappedVoiceMessage.speak(newMessage)
+
                     }
                 }
             } else {
+                unwrappedLogger.newEntry(input: currentMessage, corrected: currentMessage)
                 unwrappedVoiceMessage.speak(currentMessage)
             }
         }

@@ -14,6 +14,7 @@ struct SpellingBoardPage: View {
     @StateObject var dwellController = DwellController()
     @StateObject var gridController = GridController()
     @StateObject var directionController = DirectionController()
+    @StateObject var logger = LogHistory()
     
     @EnvironmentObject var settings: AppSettings
     
@@ -41,6 +42,7 @@ struct SpellingBoardPage: View {
             
             messageController.loadVoiceEngine(voiceEngine)
             messageController.loadAppSettings(settings)
+            messageController.loadLogger(logger)
         }
         .onChange(of: settings.layout) {
             gridController.setLayout(settings.layout)
@@ -52,6 +54,7 @@ struct SpellingBoardPage: View {
         .environmentObject(gridController)
         .environmentObject(directionController)
         .environmentObject(messageController)
+        .environmentObject(logger)
     }
 }
 

@@ -9,6 +9,8 @@ import SwiftUI
 
 struct SettingsPage: View {
     @EnvironmentObject var settings: AppSettings
+    @EnvironmentObject var logger: LogHistory
+    
     @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
@@ -50,6 +52,12 @@ struct SettingsPage: View {
                     }
                 }, header: {
                     Text("Message")
+                })
+                
+                Section(content: {
+                    ShareLink("Share history", item: logger.logFile)
+                }, header: {
+                    Text("History")
                 })
                 resetOnboardingSection
             }
