@@ -44,10 +44,10 @@ struct SettingsPage: View {
                     Text("Font Settings")
                 })
                 Section(content: {
-                    Toggle("Finish when you stop dragging", isOn: $settings.finishOnDragEnd)
+                    Toggle("Speak on Finish", isOn: $settings.finishOnDragEnd)
 //                    Toggle("Correct words on Finish", isOn: $settings.autocorrectEnabled)
                     VStack(alignment: .leading) {
-                        Toggle("Add spaces on finish", isOn: $settings.writeWithoutSpacesEnabled)
+                        Toggle("Correct Sentence on finish", isOn: $settings.writeWithoutSpacesEnabled)
                         if settings.writeWithoutSpacesEnabled {
                             Text("This will send all sentences to our server for correction. We do not store any sentences.").italic()
                         }
