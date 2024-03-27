@@ -15,6 +15,7 @@ struct Cell: Equatable, Hashable {
         case finish
         case delete
         case blank
+        case clear
     }
     
     var type: CellType
@@ -22,6 +23,14 @@ struct Cell: Equatable, Hashable {
     var speakText: String
     var messageText: String
     var widthModifier: Double
+    
+    init(isClear: Bool) {
+        type = .clear
+        displayText = "Clear"
+        messageText = ""
+        speakText = ""
+        widthModifier = 1
+    }
     
     init(isDelete: Bool) {
         type = .delete

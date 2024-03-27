@@ -42,6 +42,8 @@ struct CellView: View {
                 baseColor = .green.opacity(0.5)
             case .space:
                 baseColor = .blue.opacity(0.5)
+            case .clear:
+                baseColor = .red.opacity(0.5)
             default:
                 baseColor = .white
             }

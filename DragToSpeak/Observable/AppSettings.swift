@@ -21,4 +21,7 @@ class AppSettings: ObservableObject {
     @AppStorage("fontSize") var fontSize: Int = 10
     @AppStorage("finishOnDragEnd") var finishOnDragEnd: Bool = false
     @AppStorage("spacesColumn") var spacesColumn: SpacesColumn = .none
+    @AppStorage("readEachLetter") var readEachLetter: Bool = true
+    @AppStorage("hideClearButton") var hideClearButton: Bool = false
+
 }

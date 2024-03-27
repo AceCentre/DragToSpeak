@@ -23,6 +23,8 @@ struct SettingsPage: View {
                 }
                 Section {
                     Toggle("Show Trail", isOn: $settings.showTrail)
+                    Toggle("Hide clear button", isOn: $settings.hideClearButton)
+
                 }
                 Section(content: {
                     Toggle("Enlarge Keys on Hover", isOn: $settings.enlargeKeys)
@@ -50,6 +52,8 @@ struct SettingsPage: View {
                             Text("This will send all sentences to our server for correction. We do not store any sentences.").italic()
                         }
                     }
+                    Toggle("Read each letter as you type", isOn: $settings.readEachLetter)
+
                 }, header: {
                     Text("Message")
                 })

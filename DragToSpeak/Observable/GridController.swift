@@ -56,13 +56,18 @@ class GridController: ObservableObject {
         
         if
             let unwrappedMessageController = messageController,
-            let unwrappedVoiceEngine = voiceEngine
+            let unwrappedVoiceEngine = voiceEngine,
+            let unwrappedAppSettings = appSettings
         {
             if cell.type == .letter {
-                unwrappedVoiceEngine.speak(cell.speakText)
+                if unwrappedAppSettings.readEachLetter {
+                    unwrappedVoiceEngine.speak(cell.speakText)
+                }
                 unwrappedMessageController.currentMessage += cell.messageText
             } else if cell.type == .word {
-                unwrappedVoiceEngine.speak(cell.speakText)
+                if unwrappedAppSettings.readEachLetter {
+                    unwrappedVoiceEngine.speak(cell.speakText)
+                }
                 
                 if unwrappedMessageController.currentMessage == "" {
                     unwrappedMessageController.currentMessage = cell.messageText + " "
@@ -76,6 +81,8 @@ class GridController: ObservableObject {
                 unwrappedMessageController.finish()
             } else if cell.type == .delete {
                 unwrappedMessageController.currentMessage = String(unwrappedMessageController.currentMessage.dropLast())
+            } else if cell.type == .clear {
+                unwrappedMessageController.currentMessage = ""
             }
 
         }

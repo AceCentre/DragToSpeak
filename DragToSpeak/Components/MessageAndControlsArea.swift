@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct MessageAndControlsArea: View {
+    @EnvironmentObject var appSettings: AppSettings
+
     @ObservedObject var messageController: MessageController
     
     var body: some View {
@@ -16,16 +18,22 @@ struct MessageAndControlsArea: View {
                 MessageBox(message: messageController.currentMessage)
                 
                 HStack {
-                    Button(action: {
-                        messageController.clearMessage()
-                    }) {
-                        Label("Clear", systemImage: "trash")
-                    }.buttonStyle(.borderedProminent)
+                    if !appSettings.hideClearButton {
+                        Button(action: {
+                            messageController.clearMessage()
+                        }) {
+                            Label("Clear", systemImage: "trash")
+                                .padding()
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .clipShape(Capsule())
+                    }
                     
                     SheetLink(destination: {
                         SettingsPage()
                     }, label: {
                         Label("Settings", systemImage: "gear")
+                            
                     })
                 }
             }

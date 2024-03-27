@@ -20,6 +20,8 @@ struct SheetLink<DestinationContent: View, LabelContent: View>: View {
             label
         }).sheet(isPresented: $openSheet) {
             destination
-        }.buttonStyle(.borderedProminent)
+        }
+        .buttonStyle(BorderedButtonStyle())
+        .clipShape(Capsule())
     }
 }
